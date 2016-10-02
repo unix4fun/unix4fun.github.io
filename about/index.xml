@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Abouts on ngup, stfu, rtfm &amp; KISS</title>
+    <link>http://github.unix4fun.io/about/</link>
+    <description>Recent content in Abouts on ngup, stfu, rtfm &amp; KISS</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>&amp;copy; unix4fun 2016.&lt;br&gt;All rights reserved.</copyright>
+    <atom:link href="http://github.unix4fun.io/about/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>about unix4fun</title>
+      <link>http://github.unix4fun.io/about/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>http://github.unix4fun.io/about/</guid>
+      <description>
+
+&lt;h1 id=&#34;what&#34;&gt;what?!&lt;/h1&gt;
+
+&lt;p&gt;we&amp;rsquo;re just a bunch of nameless individuals/friends.&lt;/p&gt;
+
+&lt;p&gt;we&amp;rsquo;re just having some fun with &amp;ldquo;stuff&amp;rdquo; (sound, computers, etc..)&lt;/p&gt;
+
+&lt;p&gt;we&amp;rsquo;re trying to keep ego out of the equation.&lt;/p&gt;
+
+&lt;p&gt;we&amp;rsquo;re trying to remains open to all sorts of technology/hacks.&lt;/p&gt;
+
+&lt;p&gt;we&amp;rsquo;ve been raised under the UNIX propaganda as it is where we&amp;rsquo;ve learned everything we know.&lt;/p&gt;
+
+&lt;p&gt;that&amp;rsquo;s about it&amp;hellip;&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

