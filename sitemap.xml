@@ -2,22 +2,27 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>https://unix4fun.github.io/</loc>
+    <loc>http://github.unix4fun.io/</loc>
+    <lastmod>2016-10-03T10:48:10+02:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://github.unix4fun.io/post/howto-rop-en-64bits/</loc>
+    <lastmod>2016-10-03T10:48:10+02:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://github.unix4fun.io/post/on-est-sur-githubpages/</loc>
     <lastmod>2016-10-02T10:48:23+02:00</lastmod>
   </url>
   
   <url>
-    <loc>https://unix4fun.github.io/post/on-est-sur-githubpages/</loc>
-    <lastmod>2016-10-02T10:48:23+02:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://unix4fun.github.io/post/exploiter-un-stack-overflow/</loc>
+    <loc>http://github.unix4fun.io/post/exploiter-un-stack-overflow/</loc>
     <lastmod>2016-09-23T07:38:13+02:00</lastmod>
   </url>
   
   <url>
-    <loc>https://unix4fun.github.io/about/</loc>
+    <loc>http://github.unix4fun.io/about/</loc>
   </url>
   
 </urlset>
