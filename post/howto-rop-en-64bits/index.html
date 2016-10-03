@@ -269,7 +269,7 @@
 
 <h2 id="introduction">Introduction</h2>
 
-<p>Bon ben dans la même veine que le post précedent, je vais tâcher d&rsquo;expliquer comment exploiter un buffer overflow sur la pile, en utilisant la méthode de Return-Oriented Programming.  Cette technique est utilisée quand la pile n&rsquo;est pas exécutable, l&rsquo;idée étant de sauter dans une portion de code qui l&rsquo;est, et petit à petit, reconstruire un flot d&rsquo;exécution qui mène à&hellip; obtenir un shell avec des droits plus importants, dans le cas présent.</p>
+<p>Bon ben dans la même veine que le post précedent, je vais tâcher d&rsquo;expliquer comment exploiter un buffer overflow sur la stack, en utilisant la méthode de Return-Oriented Programming.  Cette technique est utilisée quand la stack n&rsquo;est pas exécutable, l&rsquo;idée étant de sauter dans une portion de code qui l&rsquo;est, et petit à petit, reconstruire un flot d&rsquo;exécution qui mène à&hellip; obtenir un shell avec des droits plus importants, dans le cas présent.</p>
 
 <pre><code>$ ll
 total 876
@@ -325,10 +325,10 @@ int main(int argc, char **argv)
 <p>Ici, il y a deux choses à avoir en tete:</p>
 
 <ul>
-<li>la pile est non-exécutable</li>
+<li>la stack est non-exécutable</li>
 </ul>
 
-<p>Ce qui fait qu&rsquo;on ne pourra pas pousser un shellcode directement dans la pile, via un buffer à exploiter ou une variable d&rsquo;environnement.  Il faudra faire du ret2libc, ou du ROP.</p>
+<p>Ce qui fait qu&rsquo;on ne pourra pas pousser un shellcode directement dans la stack, via un buffer à exploiter ou une variable d&rsquo;environnement.  Il faudra faire du ret2libc, ou du ROP.</p>
 
 <ul>
 <li>le programme tourne en 64 bits</li>
@@ -367,15 +367,19 @@ $
 
 <p>Il faudra donc mettre dans l&rsquo;ordre, sur la stack:</p>
 
-<pre><code>[ 0x7 | stacksize | $esp | @__mprotect | return addr ]
+<pre><code>adresses basses [ 0x7 | stacksize | $esp | @__mprotect | return addr ] adresses hautes
 </code></pre>
 
-<p>Euh&hellip; en fait non.  En réalité sur 64 bits, le passage de paramètres d&rsquo;une fonction se fait via les registres, pas en ajoutant sur la pile.  Donc l&rsquo;appel sera de la forme :</p>
+<p>Euh&hellip; en fait non.  Deux choses:</p>
 
-<pre><code>[ @__mprotect | return addr ]
-</code></pre>
+<ul>
+<li><p>Pour une fonction qui n&rsquo;est pas un <code>syscall</code>, sur x86-32 les paramètres sont passés sur la stack.  Alors que sur x86-64 on passe par les registres, donc la stack sera de la forme:</p>
 
-<p>Les paramètres sont ensuite passés via les registres <code>$rdi</code>, <code>$rsi</code>, <code>$rdx</code>, <code>$rcx</code>, <code>$r8</code>, et <code>$r9</code>.  Si vraiment il faut encore passer plus de paramètres à la fonction, alors c&rsquo;est mis sur la stack (mais ça reste rare).  Mais on ne devrait pas aller jusque là, puisque <code>mprotect()</code> ne prend que 3 arguments.</p>
+<pre><code>adresses basses [ @__mprotect | return addr ] adresses hautes
+</code></pre></li>
+
+<li><p>Pour un <code>syscall</code> dans le deux cas on passe par les registres&hellip; mais ce ne sont pas les mêmes.  Sur x86-64 les paramètres sont passés par les registres <code>$rdi</code>, <code>$rsi</code>, <code>$rdx</code>, <code>$rcx</code>, <code>$r8</code>, et <code>$r9</code>.  Si vraiment il faut encore passer plus de paramètres à la fonction, alors c&rsquo;est mis sur la stack (mais ça reste rare).  Mais on ne devrait pas aller jusque là, puisque <code>mprotect()</code> ne prend que 3 arguments.</p></li>
+</ul>
 
 <p>Une fois la stack rendue exécutable, il suffira d&rsquo;avoir empilé l&rsquo;adresse de notre shellcode (<code>return addr</code> dans le petit schéma) pour sauter où on souhaite.</p>
 
@@ -389,14 +393,14 @@ Dump of assembler code for function main:
    [...]
 </code></pre>
 
-<p>On voit que le système réserve <code>0x120</code> (288) bytes dans la pile pour faire de la place aux variables locales, etc.</p>
+<p>On voit que le système réserve <code>0x120</code> (288) bytes dans la stack pour faire de la place aux variables locales, etc.</p>
 
 <pre><code>   0x0000000000401076 &lt;+24&gt;:    lea    rax,[rbp-0x110]
    0x000000000040107d &lt;+31&gt;:    mov    rdi,rax
    0x0000000000401080 &lt;+34&gt;:    call   0x408750 &lt;gets&gt;
 </code></pre>
 
-<p>A l&rsquo;aide de ces trois instructions, on déduit que le registre <code>$rax</code> contient l&rsquo;adresse du buffer qui sera passé à la fonction <code>gets()</code>.  Et que sa base est à <code>0x110</code> (272) bytes du début de la pile (<code>$rbp</code>).  On en déduit donc que si on écrit 272 bytes dans <code>buffer</code>, alors on arrivera pile a la limite de <code>$rbp</code> qui a été empilé.  Les 8 prochains bytes vont écraser $rbp, et les 8 suivant écraseront <code>$rip</code>.  C&rsquo;est ce registre qu&rsquo;on veut contrôler.  On va tester (par acquis de conscience on met une adresse valide dans <code>$rbp</code>, i.e. <code>0x0000424242424242</code>, et <code>0x0000434343434343</code> dans <code>$rip</code>):</p>
+<p>A l&rsquo;aide de ces trois instructions, on déduit que le registre <code>$rax</code> contient l&rsquo;adresse du buffer qui sera passé à la fonction <code>gets()</code>.  Et que sa base est à <code>0x110</code> (272) bytes du début de la stack (<code>$rbp</code>).  On en déduit donc que si on écrit 272 bytes dans <code>buffer</code>, alors on arrivera stack a la limite de <code>$rbp</code> qui a été empilé.  Les 8 prochains bytes vont écraser $rbp, et les 8 suivant écraseront <code>$rip</code>.  C&rsquo;est ce registre qu&rsquo;on veut contrôler.  On va tester (par acquis de conscience on met une adresse valide dans <code>$rbp</code>, i.e. <code>0x0000424242424242</code>, et <code>0x0000434343434343</code> dans <code>$rip</code>):</p>
 
 <pre><code>gdb$ r &lt; &lt;(perl -e 'print &quot;A&quot;x272 . &quot;B&quot;x6 . &quot;\x00\x00&quot; . &quot;C&quot;x6 . &quot;\x00\x00&quot;')
 ----------------------------------------------------------------------------------------------------------------------[regs]
@@ -458,7 +462,7 @@ $ export PATH=$PATH:/tmp/p
  RDX &lt;- 0x00 (NULL)
 </code></pre>
 
-<p>Donc, le layout de la pile en sortie de <code>main()</code> devrait ressembler à quelque chose comme ceci:</p>
+<p>Donc, le layout de la stack en sortie de <code>main()</code> devrait ressembler à quelque chose comme ceci:</p>
 
 <pre><code>[ AAA....AAAA | BBBBBB00 | @(pop rax; ret) | 0x3b | @(pop rdi; ret) | &quot;/bin/sh&quot; | @(pop rsi; ret) | 0x0  | @(pop rdx; ret) | 0x0 | @syscall ]
      ^                         ^
@@ -466,7 +470,7 @@ $ export PATH=$PATH:/tmp/p
      buffer                    $rip écrasé par cette adresse
 </code></pre>
 
-<p>Une fois arrivé à la fin de la fonction <code>main()</code>, le système va donc exécuter les instructions dont l&rsquo;adresse est stockée en <code>$rip</code>, à savoir <code>pop rax; ret</code>.  Quand cette suite d&rsquo;instructions est en cours d&rsquo;exécution, le haut de la pile devient alors le mot de 8 octets suivant (<code>0x0000003b</code>), et c&rsquo;est ce mot qui est <code>pop</code>-é pour être mis dans <code>$rax</code>.  On exécutera alors le <code>pop rdi; ret</code>, qui prendra la valeur sur la pile à ce moment, à savoir l&rsquo;adresse de la chaîne de caractères <code>&quot;/bin/sh&quot;</code> pour la stocker dans <code>$rdi</code>.  Et ainsi de suite.</p>
+<p>Une fois arrivé à la fin de la fonction <code>main()</code>, le système va donc exécuter les instructions dont l&rsquo;adresse est stockée en <code>$rip</code>, à savoir <code>pop rax; ret</code>.  Quand cette suite d&rsquo;instructions est en cours d&rsquo;exécution, le haut de la stack devient alors le mot de 8 octets suivant (<code>0x0000003b</code>), et c&rsquo;est ce mot qui est <code>pop</code>-é pour être mis dans <code>$rax</code>.  On exécutera alors le <code>pop rdi; ret</code>, qui prendra la valeur sur la stack à ce moment, à savoir l&rsquo;adresse de la chaîne de caractères <code>&quot;/bin/sh&quot;</code> pour la stocker dans <code>$rdi</code>.  Et ainsi de suite.</p>
 
 <p>On va utiliser un outil dédié (il y en a d&rsquo;autres, comme <code>ROPgadget</code>), pour avoir les adresses des instructions intéressantes:</p>
 
@@ -497,7 +501,7 @@ $ rp-lin-x64 -f prog --unique  -r 1 | egrep &quot;pop rdx&quot;
 0x00400488: syscall  ;  (95 found)
 </code></pre>
 
-<p>Bien, on a l&rsquo;adresse a empiler en dernier!</p>
+<p>Bien, on a l&rsquo;adresse a empile en dernier!</p>
 
 <p>Maintenant, si vous avez fait attention, vous avez remarqué qu&rsquo;on a zappé quelque chose!  On doit resoudre le probleme de la chaîne de caractères censée être utilisée par execve().</p>
 

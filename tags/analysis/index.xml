@@ -20,7 +20,7 @@
 
 &lt;h2 id=&#34;introduction&#34;&gt;Introduction&lt;/h2&gt;
 
-&lt;p&gt;Bon ben dans la même veine que le post précedent, je vais tâcher d&amp;rsquo;expliquer comment exploiter un buffer overflow sur la pile, en utilisant la méthode de Return-Oriented Programming.  Cette technique est utilisée quand la pile n&amp;rsquo;est pas exécutable, l&amp;rsquo;idée étant de sauter dans une portion de code qui l&amp;rsquo;est, et petit à petit, reconstruire un flot d&amp;rsquo;exécution qui mène à&amp;hellip; obtenir un shell avec des droits plus importants, dans le cas présent.&lt;/p&gt;
+&lt;p&gt;Bon ben dans la même veine que le post précedent, je vais tâcher d&amp;rsquo;expliquer comment exploiter un buffer overflow sur la stack, en utilisant la méthode de Return-Oriented Programming.  Cette technique est utilisée quand la stack n&amp;rsquo;est pas exécutable, l&amp;rsquo;idée étant de sauter dans une portion de code qui l&amp;rsquo;est, et petit à petit, reconstruire un flot d&amp;rsquo;exécution qui mène à&amp;hellip; obtenir un shell avec des droits plus importants, dans le cas présent.&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;$ ll
 total 876
@@ -76,10 +76,10 @@ int main(int argc, char **argv)
 &lt;p&gt;Ici, il y a deux choses à avoir en tete:&lt;/p&gt;
 
 &lt;ul&gt;
-&lt;li&gt;la pile est non-exécutable&lt;/li&gt;
+&lt;li&gt;la stack est non-exécutable&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;Ce qui fait qu&amp;rsquo;on ne pourra pas pousser un shellcode directement dans la pile, via un buffer à exploiter ou une variable d&amp;rsquo;environnement.  Il faudra faire du ret2libc, ou du ROP.&lt;/p&gt;
+&lt;p&gt;Ce qui fait qu&amp;rsquo;on ne pourra pas pousser un shellcode directement dans la stack, via un buffer à exploiter ou une variable d&amp;rsquo;environnement.  Il faudra faire du ret2libc, ou du ROP.&lt;/p&gt;
 
 &lt;ul&gt;
 &lt;li&gt;le programme tourne en 64 bits&lt;/li&gt;
@@ -118,15 +118,19 @@ $
 
 &lt;p&gt;Il faudra donc mettre dans l&amp;rsquo;ordre, sur la stack:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;[ 0x7 | stacksize | $esp | @__mprotect | return addr ]
+&lt;pre&gt;&lt;code&gt;adresses basses [ 0x7 | stacksize | $esp | @__mprotect | return addr ] adresses hautes
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;Euh&amp;hellip; en fait non.  En réalité sur 64 bits, le passage de paramètres d&amp;rsquo;une fonction se fait via les registres, pas en ajoutant sur la pile.  Donc l&amp;rsquo;appel sera de la forme :&lt;/p&gt;
+&lt;p&gt;Euh&amp;hellip; en fait non.  Deux choses:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;[ @__mprotect | return addr ]
-&lt;/code&gt;&lt;/pre&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Pour une fonction qui n&amp;rsquo;est pas un &lt;code&gt;syscall&lt;/code&gt;, sur x86-32 les paramètres sont passés sur la stack.  Alors que sur x86-64 on passe par les registres, donc la stack sera de la forme:&lt;/p&gt;
 
-&lt;p&gt;Les paramètres sont ensuite passés via les registres &lt;code&gt;$rdi&lt;/code&gt;, &lt;code&gt;$rsi&lt;/code&gt;, &lt;code&gt;$rdx&lt;/code&gt;, &lt;code&gt;$rcx&lt;/code&gt;, &lt;code&gt;$r8&lt;/code&gt;, et &lt;code&gt;$r9&lt;/code&gt;.  Si vraiment il faut encore passer plus de paramètres à la fonction, alors c&amp;rsquo;est mis sur la stack (mais ça reste rare).  Mais on ne devrait pas aller jusque là, puisque &lt;code&gt;mprotect()&lt;/code&gt; ne prend que 3 arguments.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;adresses basses [ @__mprotect | return addr ] adresses hautes
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Pour un &lt;code&gt;syscall&lt;/code&gt; dans le deux cas on passe par les registres&amp;hellip; mais ce ne sont pas les mêmes.  Sur x86-64 les paramètres sont passés par les registres &lt;code&gt;$rdi&lt;/code&gt;, &lt;code&gt;$rsi&lt;/code&gt;, &lt;code&gt;$rdx&lt;/code&gt;, &lt;code&gt;$rcx&lt;/code&gt;, &lt;code&gt;$r8&lt;/code&gt;, et &lt;code&gt;$r9&lt;/code&gt;.  Si vraiment il faut encore passer plus de paramètres à la fonction, alors c&amp;rsquo;est mis sur la stack (mais ça reste rare).  Mais on ne devrait pas aller jusque là, puisque &lt;code&gt;mprotect()&lt;/code&gt; ne prend que 3 arguments.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
 
 &lt;p&gt;Une fois la stack rendue exécutable, il suffira d&amp;rsquo;avoir empilé l&amp;rsquo;adresse de notre shellcode (&lt;code&gt;return addr&lt;/code&gt; dans le petit schéma) pour sauter où on souhaite.&lt;/p&gt;
 
@@ -140,14 +144,14 @@ Dump of assembler code for function main:
    [...]
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;On voit que le système réserve &lt;code&gt;0x120&lt;/code&gt; (288) bytes dans la pile pour faire de la place aux variables locales, etc.&lt;/p&gt;
+&lt;p&gt;On voit que le système réserve &lt;code&gt;0x120&lt;/code&gt; (288) bytes dans la stack pour faire de la place aux variables locales, etc.&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;   0x0000000000401076 &amp;lt;+24&amp;gt;:    lea    rax,[rbp-0x110]
    0x000000000040107d &amp;lt;+31&amp;gt;:    mov    rdi,rax
    0x0000000000401080 &amp;lt;+34&amp;gt;:    call   0x408750 &amp;lt;gets&amp;gt;
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;A l&amp;rsquo;aide de ces trois instructions, on déduit que le registre &lt;code&gt;$rax&lt;/code&gt; contient l&amp;rsquo;adresse du buffer qui sera passé à la fonction &lt;code&gt;gets()&lt;/code&gt;.  Et que sa base est à &lt;code&gt;0x110&lt;/code&gt; (272) bytes du début de la pile (&lt;code&gt;$rbp&lt;/code&gt;).  On en déduit donc que si on écrit 272 bytes dans &lt;code&gt;buffer&lt;/code&gt;, alors on arrivera pile a la limite de &lt;code&gt;$rbp&lt;/code&gt; qui a été empilé.  Les 8 prochains bytes vont écraser $rbp, et les 8 suivant écraseront &lt;code&gt;$rip&lt;/code&gt;.  C&amp;rsquo;est ce registre qu&amp;rsquo;on veut contrôler.  On va tester (par acquis de conscience on met une adresse valide dans &lt;code&gt;$rbp&lt;/code&gt;, i.e. &lt;code&gt;0x0000424242424242&lt;/code&gt;, et &lt;code&gt;0x0000434343434343&lt;/code&gt; dans &lt;code&gt;$rip&lt;/code&gt;):&lt;/p&gt;
+&lt;p&gt;A l&amp;rsquo;aide de ces trois instructions, on déduit que le registre &lt;code&gt;$rax&lt;/code&gt; contient l&amp;rsquo;adresse du buffer qui sera passé à la fonction &lt;code&gt;gets()&lt;/code&gt;.  Et que sa base est à &lt;code&gt;0x110&lt;/code&gt; (272) bytes du début de la stack (&lt;code&gt;$rbp&lt;/code&gt;).  On en déduit donc que si on écrit 272 bytes dans &lt;code&gt;buffer&lt;/code&gt;, alors on arrivera stack a la limite de &lt;code&gt;$rbp&lt;/code&gt; qui a été empilé.  Les 8 prochains bytes vont écraser $rbp, et les 8 suivant écraseront &lt;code&gt;$rip&lt;/code&gt;.  C&amp;rsquo;est ce registre qu&amp;rsquo;on veut contrôler.  On va tester (par acquis de conscience on met une adresse valide dans &lt;code&gt;$rbp&lt;/code&gt;, i.e. &lt;code&gt;0x0000424242424242&lt;/code&gt;, et &lt;code&gt;0x0000434343434343&lt;/code&gt; dans &lt;code&gt;$rip&lt;/code&gt;):&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;gdb$ r &amp;lt; &amp;lt;(perl -e &#39;print &amp;quot;A&amp;quot;x272 . &amp;quot;B&amp;quot;x6 . &amp;quot;\x00\x00&amp;quot; . &amp;quot;C&amp;quot;x6 . &amp;quot;\x00\x00&amp;quot;&#39;)
 ----------------------------------------------------------------------------------------------------------------------[regs]
@@ -209,7 +213,7 @@ $ export PATH=$PATH:/tmp/p
  RDX &amp;lt;- 0x00 (NULL)
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;Donc, le layout de la pile en sortie de &lt;code&gt;main()&lt;/code&gt; devrait ressembler à quelque chose comme ceci:&lt;/p&gt;
+&lt;p&gt;Donc, le layout de la stack en sortie de &lt;code&gt;main()&lt;/code&gt; devrait ressembler à quelque chose comme ceci:&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;[ AAA....AAAA | BBBBBB00 | @(pop rax; ret) | 0x3b | @(pop rdi; ret) | &amp;quot;/bin/sh&amp;quot; | @(pop rsi; ret) | 0x0  | @(pop rdx; ret) | 0x0 | @syscall ]
      ^                         ^
@@ -217,7 +221,7 @@ $ export PATH=$PATH:/tmp/p
      buffer                    $rip écrasé par cette adresse
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;Une fois arrivé à la fin de la fonction &lt;code&gt;main()&lt;/code&gt;, le système va donc exécuter les instructions dont l&amp;rsquo;adresse est stockée en &lt;code&gt;$rip&lt;/code&gt;, à savoir &lt;code&gt;pop rax; ret&lt;/code&gt;.  Quand cette suite d&amp;rsquo;instructions est en cours d&amp;rsquo;exécution, le haut de la pile devient alors le mot de 8 octets suivant (&lt;code&gt;0x0000003b&lt;/code&gt;), et c&amp;rsquo;est ce mot qui est &lt;code&gt;pop&lt;/code&gt;-é pour être mis dans &lt;code&gt;$rax&lt;/code&gt;.  On exécutera alors le &lt;code&gt;pop rdi; ret&lt;/code&gt;, qui prendra la valeur sur la pile à ce moment, à savoir l&amp;rsquo;adresse de la chaîne de caractères &lt;code&gt;&amp;quot;/bin/sh&amp;quot;&lt;/code&gt; pour la stocker dans &lt;code&gt;$rdi&lt;/code&gt;.  Et ainsi de suite.&lt;/p&gt;
+&lt;p&gt;Une fois arrivé à la fin de la fonction &lt;code&gt;main()&lt;/code&gt;, le système va donc exécuter les instructions dont l&amp;rsquo;adresse est stockée en &lt;code&gt;$rip&lt;/code&gt;, à savoir &lt;code&gt;pop rax; ret&lt;/code&gt;.  Quand cette suite d&amp;rsquo;instructions est en cours d&amp;rsquo;exécution, le haut de la stack devient alors le mot de 8 octets suivant (&lt;code&gt;0x0000003b&lt;/code&gt;), et c&amp;rsquo;est ce mot qui est &lt;code&gt;pop&lt;/code&gt;-é pour être mis dans &lt;code&gt;$rax&lt;/code&gt;.  On exécutera alors le &lt;code&gt;pop rdi; ret&lt;/code&gt;, qui prendra la valeur sur la stack à ce moment, à savoir l&amp;rsquo;adresse de la chaîne de caractères &lt;code&gt;&amp;quot;/bin/sh&amp;quot;&lt;/code&gt; pour la stocker dans &lt;code&gt;$rdi&lt;/code&gt;.  Et ainsi de suite.&lt;/p&gt;
 
 &lt;p&gt;On va utiliser un outil dédié (il y en a d&amp;rsquo;autres, comme &lt;code&gt;ROPgadget&lt;/code&gt;), pour avoir les adresses des instructions intéressantes:&lt;/p&gt;
 
@@ -248,7 +252,7 @@ $ rp-lin-x64 -f prog --unique  -r 1 | egrep &amp;quot;pop rdx&amp;quot;
 0x00400488: syscall  ;  (95 found)
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;Bien, on a l&amp;rsquo;adresse a empiler en dernier!&lt;/p&gt;
+&lt;p&gt;Bien, on a l&amp;rsquo;adresse a empile en dernier!&lt;/p&gt;
 
 &lt;p&gt;Maintenant, si vous avez fait attention, vous avez remarqué qu&amp;rsquo;on a zappé quelque chose!  On doit resoudre le probleme de la chaîne de caractères censée être utilisée par execve().&lt;/p&gt;
 
