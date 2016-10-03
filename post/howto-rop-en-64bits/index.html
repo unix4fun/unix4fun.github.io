@@ -269,7 +269,7 @@
 
 <h2 id="introduction">Introduction</h2>
 
-<p>Bon ben dans la même veine que le post précedent, je vais tâcher d&rsquo;expliquer comment exploiter un buffer overflow sur la pile, en utilisant la méthode de Return-Oriented Programming.  Cette technique est utilise quand la pile n&rsquo;est pas exécutable, l&rsquo;idée étant de sauter dans une portion de code qui l&rsquo;est, et petit à petit, reconstruire un flot d&rsquo;exécution qui mène à&hellip; obtenir un shell avec des droits plus importants, dans le cas présent.</p>
+<p>Bon ben dans la même veine que le post précedent, je vais tâcher d&rsquo;expliquer comment exploiter un buffer overflow sur la pile, en utilisant la méthode de Return-Oriented Programming.  Cette technique est utilisée quand la pile n&rsquo;est pas exécutable, l&rsquo;idée étant de sauter dans une portion de code qui l&rsquo;est, et petit à petit, reconstruire un flot d&rsquo;exécution qui mène à&hellip; obtenir un shell avec des droits plus importants, dans le cas présent.</p>
 
 <pre><code>$ ll
 total 876
@@ -322,10 +322,10 @@ int main(int argc, char **argv)
 
 <p>Bon, il y a un buffer overflow évident à cause de <code>gets()</code>.  Tout le monde sait qu&rsquo;il ne faut pas utiliser cette fonction, pas la peine d&rsquo;épiloguer.</p>
 
-<p>Ici, il y a deux choses a avoir en tete:</p>
+<p>Ici, il y a deux choses à avoir en tete:</p>
 
 <ul>
-<li>la pile est non-executable</li>
+<li>la pile est non-exécutable</li>
 </ul>
 
 <p>Ce qui fait qu&rsquo;on ne pourra pas pousser un shellcode directement dans la pile, via un buffer à exploiter ou une variable d&rsquo;environnement.  Il faudra faire du ret2libc, ou du ROP.</p>
@@ -348,7 +348,7 @@ int main(int argc, char **argv)
 $
 </code></pre>
 
-<p>Oookay, rien d&rsquo;intéressant.   Vraiment?</p>
+<p>Oookay, rien d&rsquo;intéressant&hellip;   Vraiment?</p>
 
 <h2 id="tentative-de-ret2libc">Tentative de ret2libc</h2>
 
@@ -375,9 +375,9 @@ $
 <pre><code>[ @__mprotect | return addr ]
 </code></pre>
 
-<p>Les params sont ensuite passés via les registres <code>$rdi</code>, <code>$rsi</code>, <code>$rdx</code>, <code>$rcx</code>, <code>$r8</code>, et <code>$r9</code>.  Si vraiment il faut encore passer plus de paramètres à la fonction, alors c&rsquo;est mis sur la stack (mais ça reste rare).  Mais on ne devrait pas aller jusque la, puisque <code>mprotect()</code> ne prend que 3 arguments.</p>
+<p>Les paramètres sont ensuite passés via les registres <code>$rdi</code>, <code>$rsi</code>, <code>$rdx</code>, <code>$rcx</code>, <code>$r8</code>, et <code>$r9</code>.  Si vraiment il faut encore passer plus de paramètres à la fonction, alors c&rsquo;est mis sur la stack (mais ça reste rare).  Mais on ne devrait pas aller jusque là, puisque <code>mprotect()</code> ne prend que 3 arguments.</p>
 
-<p>Une fois la stack rendue exécutable, il suffira d&rsquo;avoir empiler l&rsquo;adresse de notre shellcode (<code>return addr</code> dans le petit schéma) pour sauter où on souhaite.</p>
+<p>Une fois la stack rendue exécutable, il suffira d&rsquo;avoir empilé l&rsquo;adresse de notre shellcode (<code>return addr</code> dans le petit schéma) pour sauter où on souhaite.</p>
 
 <pre><code>gdb$ ./prog
 [...]
@@ -396,7 +396,7 @@ Dump of assembler code for function main:
    0x0000000000401080 &lt;+34&gt;:    call   0x408750 &lt;gets&gt;
 </code></pre>
 
-<p>A l&rsquo;aide de ces trois instruction, on déduit que le registre rax contient l&rsquo;adresse du buffer qui sera passé à la fonction <code>gets()</code>.  Et que sa base est à <code>0x110</code> (272) bytes du début de la pile (<code>$rbp</code>).  On en déduit donc que si on écrit 272 bytes dans <code>buffer</code>, alors on arrivera pile a la limite de <code>$rbp</code> qui a été empilé.  Les 8 prochains bytes vont écraser $rbp, et les 8 suivant écraseront <code>$rip</code>.  C&rsquo;est ce registre qu&rsquo;on veut contrôler.  On va tester (par acquis de conscience on met une adresse valide dans <code>$rbp</code>, i.e. <code>0x0000424242424242</code>, et <code>0x0000434343434343</code> dans <code>$rip</code>:</p>
+<p>A l&rsquo;aide de ces trois instruction, on déduit que le registre <code>$rax</code> contient l&rsquo;adresse du buffer qui sera passé à la fonction <code>gets()</code>.  Et que sa base est à <code>0x110</code> (272) bytes du début de la pile (<code>$rbp</code>).  On en déduit donc que si on écrit 272 bytes dans <code>buffer</code>, alors on arrivera pile a la limite de <code>$rbp</code> qui a été empilé.  Les 8 prochains bytes vont écraser $rbp, et les 8 suivant écraseront <code>$rip</code>.  C&rsquo;est ce registre qu&rsquo;on veut contrôler.  On va tester (par acquis de conscience on met une adresse valide dans <code>$rbp</code>, i.e. <code>0x0000424242424242</code>, et <code>0x0000434343434343</code> dans <code>$rip</code>:</p>
 
 <pre><code>gdb$ r &lt; &lt;(perl -e 'print &quot;A&quot;x272 . &quot;B&quot;x6 . &quot;\x00\x00&quot; . &quot;C&quot;x6 . &quot;\x00\x00&quot;')
 ----------------------------------------------------------------------------------------------------------------------[regs]
@@ -436,10 +436,9 @@ gdb$ ni
    0x434e30 &lt;madvise&gt;:  mov    eax,0x1c
 -----------------------------------------------------------------------------------------------------------------------------
 0x0000000000434e10 in mprotect ()
-
-
-Bien!  Est-ce qu'on peut mettre les arguments voulus dans les registres idoines, maintenant?  Je ne vois pas comment faire, arrivé à ce stade.  C'est malin, j'aurais dû y penser plus tôt.  Ca a l'air compromis, de ne faire que du ret2libc.  Va falloir passer par du ROP.
 </code></pre>
+
+<p>Bien!  Est-ce qu&rsquo;on peut mettre les arguments voulus dans les registres idoines, maintenant?  Je ne vois pas comment faire, arrivé à ce stade.  C&rsquo;est malin, j&rsquo;aurais dû y penser plus tôt.  Ca a l&rsquo;air compromis, de ne faire que du ret2libc.  Va falloir passer par du ROP.</p>
 
 <h2 id="bon-ben-rop">Bon&hellip; ben ROP.</h2>
 

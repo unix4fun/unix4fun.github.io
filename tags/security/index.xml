@@ -20,7 +20,7 @@
 
 &lt;h2 id=&#34;introduction&#34;&gt;Introduction&lt;/h2&gt;
 
-&lt;p&gt;Bon ben dans la même veine que le post précedent, je vais tâcher d&amp;rsquo;expliquer comment exploiter un buffer overflow sur la pile, en utilisant la méthode de Return-Oriented Programming.  Cette technique est utilise quand la pile n&amp;rsquo;est pas exécutable, l&amp;rsquo;idée étant de sauter dans une portion de code qui l&amp;rsquo;est, et petit à petit, reconstruire un flot d&amp;rsquo;exécution qui mène à&amp;hellip; obtenir un shell avec des droits plus importants, dans le cas présent.&lt;/p&gt;
+&lt;p&gt;Bon ben dans la même veine que le post précedent, je vais tâcher d&amp;rsquo;expliquer comment exploiter un buffer overflow sur la pile, en utilisant la méthode de Return-Oriented Programming.  Cette technique est utilisée quand la pile n&amp;rsquo;est pas exécutable, l&amp;rsquo;idée étant de sauter dans une portion de code qui l&amp;rsquo;est, et petit à petit, reconstruire un flot d&amp;rsquo;exécution qui mène à&amp;hellip; obtenir un shell avec des droits plus importants, dans le cas présent.&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;$ ll
 total 876
@@ -73,10 +73,10 @@ int main(int argc, char **argv)
 
 &lt;p&gt;Bon, il y a un buffer overflow évident à cause de &lt;code&gt;gets()&lt;/code&gt;.  Tout le monde sait qu&amp;rsquo;il ne faut pas utiliser cette fonction, pas la peine d&amp;rsquo;épiloguer.&lt;/p&gt;
 
-&lt;p&gt;Ici, il y a deux choses a avoir en tete:&lt;/p&gt;
+&lt;p&gt;Ici, il y a deux choses à avoir en tete:&lt;/p&gt;
 
 &lt;ul&gt;
-&lt;li&gt;la pile est non-executable&lt;/li&gt;
+&lt;li&gt;la pile est non-exécutable&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;p&gt;Ce qui fait qu&amp;rsquo;on ne pourra pas pousser un shellcode directement dans la pile, via un buffer à exploiter ou une variable d&amp;rsquo;environnement.  Il faudra faire du ret2libc, ou du ROP.&lt;/p&gt;
@@ -99,7 +99,7 @@ int main(int argc, char **argv)
 $
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;Oookay, rien d&amp;rsquo;intéressant.   Vraiment?&lt;/p&gt;
+&lt;p&gt;Oookay, rien d&amp;rsquo;intéressant&amp;hellip;   Vraiment?&lt;/p&gt;
 
 &lt;h2 id=&#34;tentative-de-ret2libc&#34;&gt;Tentative de ret2libc&lt;/h2&gt;
 
@@ -126,9 +126,9 @@ $
 &lt;pre&gt;&lt;code&gt;[ @__mprotect | return addr ]
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;Les params sont ensuite passés via les registres &lt;code&gt;$rdi&lt;/code&gt;, &lt;code&gt;$rsi&lt;/code&gt;, &lt;code&gt;$rdx&lt;/code&gt;, &lt;code&gt;$rcx&lt;/code&gt;, &lt;code&gt;$r8&lt;/code&gt;, et &lt;code&gt;$r9&lt;/code&gt;.  Si vraiment il faut encore passer plus de paramètres à la fonction, alors c&amp;rsquo;est mis sur la stack (mais ça reste rare).  Mais on ne devrait pas aller jusque la, puisque &lt;code&gt;mprotect()&lt;/code&gt; ne prend que 3 arguments.&lt;/p&gt;
+&lt;p&gt;Les paramètres sont ensuite passés via les registres &lt;code&gt;$rdi&lt;/code&gt;, &lt;code&gt;$rsi&lt;/code&gt;, &lt;code&gt;$rdx&lt;/code&gt;, &lt;code&gt;$rcx&lt;/code&gt;, &lt;code&gt;$r8&lt;/code&gt;, et &lt;code&gt;$r9&lt;/code&gt;.  Si vraiment il faut encore passer plus de paramètres à la fonction, alors c&amp;rsquo;est mis sur la stack (mais ça reste rare).  Mais on ne devrait pas aller jusque là, puisque &lt;code&gt;mprotect()&lt;/code&gt; ne prend que 3 arguments.&lt;/p&gt;
 
-&lt;p&gt;Une fois la stack rendue exécutable, il suffira d&amp;rsquo;avoir empiler l&amp;rsquo;adresse de notre shellcode (&lt;code&gt;return addr&lt;/code&gt; dans le petit schéma) pour sauter où on souhaite.&lt;/p&gt;
+&lt;p&gt;Une fois la stack rendue exécutable, il suffira d&amp;rsquo;avoir empilé l&amp;rsquo;adresse de notre shellcode (&lt;code&gt;return addr&lt;/code&gt; dans le petit schéma) pour sauter où on souhaite.&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;gdb$ ./prog
 [...]
@@ -147,7 +147,7 @@ Dump of assembler code for function main:
    0x0000000000401080 &amp;lt;+34&amp;gt;:    call   0x408750 &amp;lt;gets&amp;gt;
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;A l&amp;rsquo;aide de ces trois instruction, on déduit que le registre rax contient l&amp;rsquo;adresse du buffer qui sera passé à la fonction &lt;code&gt;gets()&lt;/code&gt;.  Et que sa base est à &lt;code&gt;0x110&lt;/code&gt; (272) bytes du début de la pile (&lt;code&gt;$rbp&lt;/code&gt;).  On en déduit donc que si on écrit 272 bytes dans &lt;code&gt;buffer&lt;/code&gt;, alors on arrivera pile a la limite de &lt;code&gt;$rbp&lt;/code&gt; qui a été empilé.  Les 8 prochains bytes vont écraser $rbp, et les 8 suivant écraseront &lt;code&gt;$rip&lt;/code&gt;.  C&amp;rsquo;est ce registre qu&amp;rsquo;on veut contrôler.  On va tester (par acquis de conscience on met une adresse valide dans &lt;code&gt;$rbp&lt;/code&gt;, i.e. &lt;code&gt;0x0000424242424242&lt;/code&gt;, et &lt;code&gt;0x0000434343434343&lt;/code&gt; dans &lt;code&gt;$rip&lt;/code&gt;:&lt;/p&gt;
+&lt;p&gt;A l&amp;rsquo;aide de ces trois instruction, on déduit que le registre &lt;code&gt;$rax&lt;/code&gt; contient l&amp;rsquo;adresse du buffer qui sera passé à la fonction &lt;code&gt;gets()&lt;/code&gt;.  Et que sa base est à &lt;code&gt;0x110&lt;/code&gt; (272) bytes du début de la pile (&lt;code&gt;$rbp&lt;/code&gt;).  On en déduit donc que si on écrit 272 bytes dans &lt;code&gt;buffer&lt;/code&gt;, alors on arrivera pile a la limite de &lt;code&gt;$rbp&lt;/code&gt; qui a été empilé.  Les 8 prochains bytes vont écraser $rbp, et les 8 suivant écraseront &lt;code&gt;$rip&lt;/code&gt;.  C&amp;rsquo;est ce registre qu&amp;rsquo;on veut contrôler.  On va tester (par acquis de conscience on met une adresse valide dans &lt;code&gt;$rbp&lt;/code&gt;, i.e. &lt;code&gt;0x0000424242424242&lt;/code&gt;, et &lt;code&gt;0x0000434343434343&lt;/code&gt; dans &lt;code&gt;$rip&lt;/code&gt;:&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;gdb$ r &amp;lt; &amp;lt;(perl -e &#39;print &amp;quot;A&amp;quot;x272 . &amp;quot;B&amp;quot;x6 . &amp;quot;\x00\x00&amp;quot; . &amp;quot;C&amp;quot;x6 . &amp;quot;\x00\x00&amp;quot;&#39;)
 ----------------------------------------------------------------------------------------------------------------------[regs]
@@ -187,10 +187,9 @@ gdb$ ni
    0x434e30 &amp;lt;madvise&amp;gt;:  mov    eax,0x1c
 -----------------------------------------------------------------------------------------------------------------------------
 0x0000000000434e10 in mprotect ()
-
-
-Bien!  Est-ce qu&#39;on peut mettre les arguments voulus dans les registres idoines, maintenant?  Je ne vois pas comment faire, arrivé à ce stade.  C&#39;est malin, j&#39;aurais dû y penser plus tôt.  Ca a l&#39;air compromis, de ne faire que du ret2libc.  Va falloir passer par du ROP.
 &lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Bien!  Est-ce qu&amp;rsquo;on peut mettre les arguments voulus dans les registres idoines, maintenant?  Je ne vois pas comment faire, arrivé à ce stade.  C&amp;rsquo;est malin, j&amp;rsquo;aurais dû y penser plus tôt.  Ca a l&amp;rsquo;air compromis, de ne faire que du ret2libc.  Va falloir passer par du ROP.&lt;/p&gt;
 
 &lt;h2 id=&#34;bon-ben-rop&#34;&gt;Bon&amp;hellip; ben ROP.&lt;/h2&gt;
 
