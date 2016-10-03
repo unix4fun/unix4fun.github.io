@@ -198,8 +198,6 @@ gdb$ ni
 &lt;p&gt;Récuperons un outil pour trouver des gadgets (c&amp;rsquo;est ainsi qu&amp;rsquo;on appelle ces séquences d&amp;rsquo;instructions).  Comme on n&amp;rsquo;a pas les droits en écriture dans le répertoire &lt;code&gt;$HOME&lt;/code&gt;, on va tout mettre en bordel dans &lt;code&gt;/tmp&lt;/code&gt;.&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;$ mkdir /tmp/p
-$ wget https://github.com/downloads/0vercl0k/rp/rp-lin-x64 -O /tmp/p/
-$ chmod +x /tmp/p/rp-lin-x64
 $ export PATH=$PATH:/tmp/p
 &lt;/code&gt;&lt;/pre&gt;
 
@@ -221,9 +219,12 @@ $ export PATH=$PATH:/tmp/p
 
 &lt;p&gt;Une fois arrivé à la fin de la fonction &lt;code&gt;main()&lt;/code&gt;, le système va donc exécuter les instructions dont l&amp;rsquo;adresse est stockée en &lt;code&gt;$rip&lt;/code&gt;, à savoir &lt;code&gt;pop rax; ret&lt;/code&gt;.  Quand cette suite d&amp;rsquo;instructions est en cours d&amp;rsquo;exécution, le haut de la pile devient alors le mot de 8 octets suivant (&lt;code&gt;0x0000003b&lt;/code&gt;), et c&amp;rsquo;est ce mot qui est &lt;code&gt;pop&lt;/code&gt;-é pour être mis dans &lt;code&gt;$rax&lt;/code&gt;.  On exécutera alors le &lt;code&gt;pop rdi; ret&lt;/code&gt;, qui prendra la valeur sur la pile à ce moment, à savoir l&amp;rsquo;adresse de la chaîne de caractères &lt;code&gt;&amp;quot;/bin/sh&amp;quot;&lt;/code&gt; pour la stocker dans &lt;code&gt;$rdi&lt;/code&gt;.  Et ainsi de suite.&lt;/p&gt;
 
-&lt;p&gt;On va utiliser l&amp;rsquo;outil téléchargé (il y en a d&amp;rsquo;autres, comme &lt;code&gt;ROPgadget&lt;/code&gt;), pour avoir les adresses des instructions intéressantes:&lt;/p&gt;
+&lt;p&gt;On va utiliser un outil dédié (il y en a d&amp;rsquo;autres, comme &lt;code&gt;ROPgadget&lt;/code&gt;), pour avoir les adresses des instructions intéressantes:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;$ rp-lin-x64 --file ./prog --unique -r 1 | grep &amp;quot;pop rax&amp;quot;
+&lt;pre&gt;&lt;code&gt;$ wget https://github.com/downloads/0vercl0k/rp/rp-lin-x64 -O /tmp/p/
+$ chmod +x /tmp/p/rp-lin-x64
+
+$ rp-lin-x64 --file ./prog --unique -r 1 | grep &amp;quot;pop rax&amp;quot;
 [...]
 0x0044d2b4: pop rax ; ret  ;  (8 found)
 
@@ -252,10 +253,10 @@ $ rp-lin-x64 -f prog --unique  -r 1 | egrep &amp;quot;pop rdx&amp;quot;
 &lt;p&gt;Maintenant, si vous avez fait attention, vous avez remarqué qu&amp;rsquo;on a zappé quelque chose!  On doit resoudre le probleme de la chaîne de caractères censée être utilisée par execve().&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;$ nm -a ./ch34 | grep &amp;quot;/bin/sh&amp;quot;
-    $
+$
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;On ne trouve pas &amp;ldquo;/bin/sh&amp;rdquo; dans le binaire.  On va utiliser un trick:  trouver une petite chaîne dispo en mémoire, qui ne corresponde pas a une commande déjà existante, puis créer un wrapper à &lt;code&gt;/bin/dash&lt;/code&gt; qui portera le nom de cette chaîne.  Ce wrapper sera mis dans le répertoire &lt;code&gt;/tmp/p&lt;/code&gt;, qu&amp;rsquo;on ajoutera au &lt;code&gt;PATH&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;On ne trouve pas &amp;ldquo;/bin/sh&amp;rdquo; dans le binaire.  On va utiliser un trick:  trouver une petite chaîne dispo en mémoire, qui ne corresponde pas a une commande déjà existante, puis créer un wrapper à &lt;code&gt;/bin/dash&lt;/code&gt; qui portera le nom de cette chaîne.  Ce wrapper sera mis dans le répertoire &lt;code&gt;/tmp/p&lt;/code&gt;, qui est dans le &lt;code&gt;PATH&lt;/code&gt;.&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;$ readelf -x .rodata ./prog | less
 [...]
