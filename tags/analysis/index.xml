@@ -2,20 +2,20 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Analysis on ngup, stfu, rtfm &amp; KISS</title>
-    <link>http://github.unix4fun.io/tags/analysis/</link>
+    <link>https://unixfun.github.io/tags/analysis/</link>
     <description>Recent content in Analysis on ngup, stfu, rtfm &amp; KISS</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>&amp;copy; unix4fun 2016.&lt;br&gt;All rights reserved.</copyright>
     <lastBuildDate>Mon, 03 Oct 2016 10:48:10 +0200</lastBuildDate>
-    <atom:link href="http://github.unix4fun.io/tags/analysis/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://unixfun.github.io/tags/analysis/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Exploiter un binaire 64 bits sous Linux via ROP</title>
-      <link>http://github.unix4fun.io/post/howto-rop-en-64bits/</link>
+      <link>https://unixfun.github.io/post/howto-rop-en-64bits/</link>
       <pubDate>Mon, 03 Oct 2016 10:48:10 +0200</pubDate>
       
-      <guid>http://github.unix4fun.io/post/howto-rop-en-64bits/</guid>
+      <guid>https://unixfun.github.io/post/howto-rop-en-64bits/</guid>
       <description>
 
 &lt;h1 id=&#34;introduction&#34;&gt;Introduction&lt;/h1&gt;
@@ -449,10 +449,10 @@ CeciEstMonFlagTagadaTsoinTsoin!
     
     <item>
       <title>Exploiter un stack overflow à l&#39;ancienne.</title>
-      <link>http://github.unix4fun.io/post/exploiter-un-stack-overflow/</link>
+      <link>https://unixfun.github.io/post/exploiter-un-stack-overflow/</link>
       <pubDate>Fri, 23 Sep 2016 07:38:13 +0200</pubDate>
       
-      <guid>http://github.unix4fun.io/post/exploiter-un-stack-overflow/</guid>
+      <guid>https://unixfun.github.io/post/exploiter-un-stack-overflow/</guid>
       <description>&lt;p&gt;Youpla la compagnie! Ça fait un bail non? :) Bon, récemment je me suis mis à regarder un peu les vieilles failles de sécu des années 90&amp;rsquo;/début 2000. Ok ok, de nos jours c&amp;rsquo;est complètement différent, on a des milliards de protections (PIE, ASLR, relro, stack canary, etc). Mais pour ma culture générale, j&amp;rsquo;ai voulu regarder. J&amp;rsquo;ai donc cherché sur google un site proposant des challenges, et je suis tombé sur l&amp;rsquo;un d&amp;rsquo;eux qui est vraiment bien fichu: il propose une dizaine de catégories (web, cryptanalyse, crackme, exploitation système, etc). Il propose de se connecter sur des machines où l&amp;rsquo;environnement est déjà préparé, etc.&lt;/p&gt;
 
 &lt;p&gt;NOTE: je ne le nomme pas, non pas pour ne pas faire de la publicité, mais parce qu&amp;rsquo;en traînant un peu mes guêtre par là, les administrateurs n&amp;rsquo;aiment pas trop que les solutions se trouvent trop facilement sur le net. Donc je vais tenter de rendre la recherche de solution un peu plus compliquée tout en restant cohérent (j&amp;rsquo;espère).&lt;/p&gt;

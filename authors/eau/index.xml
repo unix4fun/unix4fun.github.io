@@ -2,20 +2,20 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Eau on ngup, stfu, rtfm &amp; KISS</title>
-    <link>http://github.unix4fun.io/authors/eau/</link>
+    <link>https://unixfun.github.io/authors/eau/</link>
     <description>Recent content in Eau on ngup, stfu, rtfm &amp; KISS</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>&amp;copy; unix4fun 2016.&lt;br&gt;All rights reserved.</copyright>
     <lastBuildDate>Sun, 02 Oct 2016 10:48:23 +0200</lastBuildDate>
-    <atom:link href="http://github.unix4fun.io/authors/eau/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://unixfun.github.io/authors/eau/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>On est sur Github Pages!!! rholallalala</title>
-      <link>http://github.unix4fun.io/post/on-est-sur-githubpages/</link>
+      <link>https://unixfun.github.io/post/on-est-sur-githubpages/</link>
       <pubDate>Sun, 02 Oct 2016 10:48:23 +0200</pubDate>
       
-      <guid>http://github.unix4fun.io/post/on-est-sur-githubpages/</guid>
+      <guid>https://unixfun.github.io/post/on-est-sur-githubpages/</guid>
       <description>&lt;p&gt;Tout est dit!&lt;/p&gt;
 
 &lt;p&gt;On utilise donc &lt;a href=&#34;https://gohugo.io/&#34;&gt;Hugo&lt;/a&gt; et on hoste sur &lt;a href=&#34;https://pages.github.com/&#34;&gt;GitHub Pages&lt;/a&gt;.&lt;/p&gt;
