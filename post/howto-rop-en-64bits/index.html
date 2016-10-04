@@ -501,15 +501,15 @@ $ rp-lin-x64 -f prog --unique  -r 1 | egrep &quot;pop rdx&quot;
 0x00400488: syscall  ;  (95 found)
 </code></pre>
 
-<p>Bien, on a l&rsquo;adresse a empile en dernier!</p>
+<p>Bien, on a l&rsquo;adresse à empiler en dernier!</p>
 
-<p>Maintenant, si vous avez fait attention, vous avez remarqué qu&rsquo;on a zappé quelque chose!  On doit resoudre le probleme de la chaîne de caractères censée être utilisée par execve().</p>
+<p>Maintenant, si vous avez fait attention, vous avez remarqué qu&rsquo;on a zappé quelque chose!  On doit resoudre le probleme de la chaîne de caractères censée être utilisée par <code>execve()</code>.</p>
 
 <pre><code>$ nm -a ./ch34 | grep &quot;/bin/sh&quot;
 $
 </code></pre>
 
-<p>On ne trouve pas &ldquo;/bin/sh&rdquo; dans le binaire, ni d&rsquo;autres chemins susceptible de nous plaire&hellip;  On va utiliser un trick:  trouver une petite chaîne dispo en mémoire, qui ne corresponde pas a une commande déjà existante, puis créer un wrapper à <code>/bin/dash</code> qui portera le nom de cette chaîne.  Ce wrapper sera mis dans le répertoire <code>/tmp/p</code>, qui est dans le <code>PATH</code>.</p>
+<p>On ne trouve pas <code>&quot;/bin/sh&quot;</code> dans le binaire, ni d&rsquo;autres chemins susceptible de nous plaire&hellip;  On va utiliser un trick:  trouver une petite chaîne dispo en mémoire, qui ne corresponde pas a une commande déjà existante, puis créer un wrapper à <code>/bin/dash</code> qui portera le nom de cette chaîne.  Ce wrapper sera mis dans le répertoire <code>/tmp/p</code>, qui est dans le <code>PATH</code>.</p>
 
 <pre><code>$ readelf -x .rodata ./prog | less
 [...]

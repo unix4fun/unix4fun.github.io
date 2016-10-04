@@ -252,15 +252,15 @@ $ rp-lin-x64 -f prog --unique  -r 1 | egrep &amp;quot;pop rdx&amp;quot;
 0x00400488: syscall  ;  (95 found)
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;Bien, on a l&amp;rsquo;adresse a empile en dernier!&lt;/p&gt;
+&lt;p&gt;Bien, on a l&amp;rsquo;adresse à empiler en dernier!&lt;/p&gt;
 
-&lt;p&gt;Maintenant, si vous avez fait attention, vous avez remarqué qu&amp;rsquo;on a zappé quelque chose!  On doit resoudre le probleme de la chaîne de caractères censée être utilisée par execve().&lt;/p&gt;
+&lt;p&gt;Maintenant, si vous avez fait attention, vous avez remarqué qu&amp;rsquo;on a zappé quelque chose!  On doit resoudre le probleme de la chaîne de caractères censée être utilisée par &lt;code&gt;execve()&lt;/code&gt;.&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;$ nm -a ./ch34 | grep &amp;quot;/bin/sh&amp;quot;
 $
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;On ne trouve pas &amp;ldquo;/bin/sh&amp;rdquo; dans le binaire, ni d&amp;rsquo;autres chemins susceptible de nous plaire&amp;hellip;  On va utiliser un trick:  trouver une petite chaîne dispo en mémoire, qui ne corresponde pas a une commande déjà existante, puis créer un wrapper à &lt;code&gt;/bin/dash&lt;/code&gt; qui portera le nom de cette chaîne.  Ce wrapper sera mis dans le répertoire &lt;code&gt;/tmp/p&lt;/code&gt;, qui est dans le &lt;code&gt;PATH&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;On ne trouve pas &lt;code&gt;&amp;quot;/bin/sh&amp;quot;&lt;/code&gt; dans le binaire, ni d&amp;rsquo;autres chemins susceptible de nous plaire&amp;hellip;  On va utiliser un trick:  trouver une petite chaîne dispo en mémoire, qui ne corresponde pas a une commande déjà existante, puis créer un wrapper à &lt;code&gt;/bin/dash&lt;/code&gt; qui portera le nom de cette chaîne.  Ce wrapper sera mis dans le répertoire &lt;code&gt;/tmp/p&lt;/code&gt;, qui est dans le &lt;code&gt;PATH&lt;/code&gt;.&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;$ readelf -x .rodata ./prog | less
 [...]
