@@ -203,7 +203,12 @@ gdb$ ni
 
 &lt;pre&gt;&lt;code&gt;$ mkdir /tmp/p
 $ export PATH=$PATH:/tmp/p
+
+$ wget https://github.com/downloads/0vercl0k/rp/rp-lin-x64 -O /tmp/p/
+$ chmod +x /tmp/p/rp-lin-x64
 &lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;On a choisi &lt;code&gt;rp++&lt;/code&gt;, un peu par hasard.  Et parce que ce qu&amp;rsquo;on va faire est simple (il y en a d&amp;rsquo;autres, comme &lt;code&gt;ROPgadget&lt;/code&gt;), car on veut juste &lt;code&gt;pop&lt;/code&gt;-er des valeurs de la stack pour les mettre dans des registres.  Nothing fancy, comme on dit.&lt;/p&gt;
 
 &lt;p&gt;On va tenter de faire exécuter un &lt;code&gt;execve()&lt;/code&gt; via des gadgets, du coup.  Ce qu&amp;rsquo;on souhaite, c&amp;rsquo;est faire executer &lt;code&gt;execve(&amp;quot;/bin/sh&amp;quot;, NULL, NULL);&lt;/code&gt;.  Notons que d&amp;rsquo;après la documentation de l&amp;rsquo;ABI du système, &lt;code&gt;$rax&lt;/code&gt; doit contenir le numéro du syscall (et le contenu sera écrasé lors du retour de fonction, si jamais il se produit&amp;hellip; dans notre cas on s&amp;rsquo;en moque, puisqu&amp;rsquo;on veut spawner un shell).  Il faudra donc mettre les registres dans l&amp;rsquo;état suivant:&lt;/p&gt;
 
@@ -223,12 +228,7 @@ $ export PATH=$PATH:/tmp/p
 
 &lt;p&gt;Une fois arrivé à la fin de la fonction &lt;code&gt;main()&lt;/code&gt;, le système va donc exécuter les instructions dont l&amp;rsquo;adresse est stockée en &lt;code&gt;$rip&lt;/code&gt;, à savoir &lt;code&gt;pop rax; ret&lt;/code&gt;.  Quand cette suite d&amp;rsquo;instructions est en cours d&amp;rsquo;exécution, le haut de la stack devient alors le mot de 8 octets suivant (&lt;code&gt;0x0000003b&lt;/code&gt;), et c&amp;rsquo;est ce mot qui est &lt;code&gt;pop&lt;/code&gt;-é pour être mis dans &lt;code&gt;$rax&lt;/code&gt;.  On exécutera alors le &lt;code&gt;pop rdi; ret&lt;/code&gt;, qui prendra la valeur sur la stack à ce moment, à savoir l&amp;rsquo;adresse de la chaîne de caractères &lt;code&gt;&amp;quot;/bin/sh&amp;quot;&lt;/code&gt; pour la stocker dans &lt;code&gt;$rdi&lt;/code&gt;.  Et ainsi de suite.&lt;/p&gt;
 
-&lt;p&gt;On va utiliser un outil dédié (il y en a d&amp;rsquo;autres, comme &lt;code&gt;ROPgadget&lt;/code&gt;), pour avoir les adresses des instructions intéressantes:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;$ wget https://github.com/downloads/0vercl0k/rp/rp-lin-x64 -O /tmp/p/
-$ chmod +x /tmp/p/rp-lin-x64
-
-$ rp-lin-x64 --file ./prog --unique -r 1 | grep &amp;quot;pop rax&amp;quot;
+&lt;pre&gt;&lt;code&gt;$ rp-lin-x64 --file ./prog --unique -r 1 | grep &amp;quot;pop rax&amp;quot;
 [...]
 0x0044d2b4: pop rax ; ret  ;  (8 found)
 
