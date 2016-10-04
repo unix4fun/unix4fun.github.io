@@ -509,7 +509,7 @@ $ rp-lin-x64 -f prog --unique  -r 1 | egrep &quot;pop rdx&quot;
 $
 </code></pre>
 
-<p>On ne trouve pas &ldquo;/bin/sh&rdquo; dans le binaire.  On va utiliser un trick:  trouver une petite chaîne dispo en mémoire, qui ne corresponde pas a une commande déjà existante, puis créer un wrapper à <code>/bin/dash</code> qui portera le nom de cette chaîne.  Ce wrapper sera mis dans le répertoire <code>/tmp/p</code>, qui est dans le <code>PATH</code>.</p>
+<p>On ne trouve pas &ldquo;/bin/sh&rdquo; dans le binaire, ni d&rsquo;autres chemins susceptible de nous plaire&hellip;  On va utiliser un trick:  trouver une petite chaîne dispo en mémoire, qui ne corresponde pas a une commande déjà existante, puis créer un wrapper à <code>/bin/dash</code> qui portera le nom de cette chaîne.  Ce wrapper sera mis dans le répertoire <code>/tmp/p</code>, qui est dans le <code>PATH</code>.</p>
 
 <pre><code>$ readelf -x .rodata ./prog | less
 [...]
