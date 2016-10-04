@@ -118,7 +118,7 @@ $
 
 &lt;p&gt;Il faudra donc mettre dans l&amp;rsquo;ordre, sur la stack:&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;adresses basses [ 0x7 | stacksize | $esp | @__mprotect | return addr ] adresses hautes
+&lt;pre&gt;&lt;code&gt;adresses basses [ @__mprotect | return addr | 0x7 | stacksize | $esp ] adresses hautes
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;Euh&amp;hellip; en fait non.  Deux choses:&lt;/p&gt;

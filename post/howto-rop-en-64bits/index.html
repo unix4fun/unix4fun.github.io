@@ -367,7 +367,7 @@ $
 
 <p>Il faudra donc mettre dans l&rsquo;ordre, sur la stack:</p>
 
-<pre><code>adresses basses [ 0x7 | stacksize | $esp | @__mprotect | return addr ] adresses hautes
+<pre><code>adresses basses [ @__mprotect | return addr | 0x7 | stacksize | $esp ] adresses hautes
 </code></pre>
 
 <p>Euh&hellip; en fait non.  Deux choses:</p>
