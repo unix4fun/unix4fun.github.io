@@ -49,16 +49,6 @@
 
 &lt;p&gt;Honnêtement, je vais pas reprendre le setup pas à pas, j&amp;rsquo;ai compilé une serie de liens qui m&amp;rsquo;ont aidé à piger/faire mon setup, ca devrait largement suffire pour démarrer.&lt;/p&gt;
 
-&lt;p&gt;En ce qui concerne les smartcards, voila ce que j&amp;rsquo;ai listé:&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;Yubikey v4, elles ont plusieurs mode de fonctionnement qui collaborent (FIDO/U2F/CCID/HSM blablabla), en gros yubikey (si vous les ouvrez) c&amp;rsquo;est 2 MCU, un &amp;ldquo;secure&amp;rdquo; MCU qui gère la crypto/storage, NXP chaisplus combien et un MCU qui gère la comm USB/CCID, &lt;a href=&#34;http://www.hexview.com/~scl/neo/&#34;&gt;quelqu&amp;rsquo;un l&amp;rsquo;avait fait avant moi&lt;/a&gt;, ça ne m&amp;rsquo;a pas empêché de l&amp;rsquo;ouvrir&amp;hellip; oui, vous avez compris j&amp;rsquo;adore ouvrir les boîtes de cassoulets &lt;a href=&#34;http://www.hexview.com/~scl/neo/&#34;&gt;http://www.hexview.com/~scl/neo/&lt;/a&gt; mais lui au moins, il a pris des photos.&lt;/li&gt;
-&lt;li&gt;OpenPGP card v2.1 on les trouve un peu partout, un peu lentes mais marchent très bien (recommandées par la FSF).&lt;/li&gt;
-&lt;li&gt;Nitrokey, une implementation &amp;ldquo;opensource&amp;rdquo;/freemium d&amp;rsquo;une smartcard à base de MCU / gnuk.&lt;/li&gt;
-&lt;li&gt;Gnuk, MCU avec le code opensource Gnuk, qui utilise une lib de threading comme OS et fait tourner les opérations de crypto et la minipile USB/CCID pour repondre comme une smartcard.&lt;/li&gt;
-&lt;li&gt;what else?&lt;/li&gt;
-&lt;/ul&gt;
-
 &lt;p&gt;Voilà les liens qui m&amp;rsquo;ont aidés:&lt;/p&gt;
 
 &lt;ul&gt;
@@ -78,6 +68,16 @@
 &lt;li&gt;&lt;a href=&#34;https://www.esev.com/blog/post/2015-01-pgp-ssh-key-on-yubikey-neo/&#34;&gt;https://www.esev.com/blog/post/2015-01-pgp-ssh-key-on-yubikey-neo/&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://www.programmierecke.net/howto/gpg-ssh.html&#34;&gt;https://www.programmierecke.net/howto/gpg-ssh.html&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://alexcabal.com/creating-the-perfect-gpg-keypair/&#34;&gt;https://alexcabal.com/creating-the-perfect-gpg-keypair/&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;En ce qui concerne les smartcards, voila ce que j&amp;rsquo;ai listé:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Yubikey v4, elles ont plusieurs mode de fonctionnement qui collaborent (FIDO/U2F/CCID/HSM blablabla), en gros yubikey (si vous les ouvrez) c&amp;rsquo;est 2 MCU, un &amp;ldquo;secure&amp;rdquo; MCU qui gère la crypto/storage, NXP chaisplus combien et un MCU qui gère la comm USB/CCID, &lt;a href=&#34;http://www.hexview.com/~scl/neo/&#34;&gt;quelqu&amp;rsquo;un l&amp;rsquo;avait fait avant moi&lt;/a&gt;, ça ne m&amp;rsquo;a pas empêché de l&amp;rsquo;ouvrir&amp;hellip; oui, vous avez compris j&amp;rsquo;adore ouvrir les boîtes de cassoulets &lt;a href=&#34;http://www.hexview.com/~scl/neo/&#34;&gt;http://www.hexview.com/~scl/neo/&lt;/a&gt; mais lui au moins, il a pris des photos.&lt;/li&gt;
+&lt;li&gt;OpenPGP card v2.1 on les trouve un peu partout, un peu lentes mais marchent très bien (recommandées par la FSF).&lt;/li&gt;
+&lt;li&gt;Nitrokey, une implementation &amp;ldquo;opensource&amp;rdquo;/freemium d&amp;rsquo;une smartcard à base de MCU / gnuk.&lt;/li&gt;
+&lt;li&gt;Gnuk, MCU avec le code opensource Gnuk, qui utilise une lib de threading comme OS et fait tourner les opérations de crypto et la minipile USB/CCID pour repondre comme une smartcard.&lt;/li&gt;
+&lt;li&gt;what else?&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;p&gt;Hardware:&lt;/p&gt;
