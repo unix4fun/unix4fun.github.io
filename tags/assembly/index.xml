@@ -2,12 +2,11 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Assembly on ngup, stfu, rtfm &amp; KISS</title>
-    <link>https://unix4fun.github.io/tags/assembly/</link>
+    <link>https://unix4fun.github.io/tags/assembly/index.xml</link>
     <description>Recent content in Assembly on ngup, stfu, rtfm &amp; KISS</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>&amp;copy; unix4fun 2016.&lt;br&gt;All rights reserved.</copyright>
-    <lastBuildDate>Mon, 03 Oct 2016 10:48:10 +0200</lastBuildDate>
     <atom:link href="https://unix4fun.github.io/tags/assembly/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
@@ -85,7 +84,7 @@ int main(int argc, char **argv)
 &lt;li&gt;le programme tourne en 64 bits&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;Les conventions d&amp;rsquo;appel de fonction ne sont pas les mêmes qu&amp;rsquo;en 32 bits, les syscalls ont de petites différences, etc.  On verra ca dans la suite&amp;hellip;  Il faut également garder à l&amp;rsquo;esprit que l&amp;rsquo;espace des adresses valide n&amp;rsquo;est pas le même qu&amp;rsquo;en 32 bits.  En effet souvent on utilise la fameuse séquence &lt;code&gt;0x414141..&lt;/code&gt;. pour marquer qu&amp;rsquo;on contrôle bien le pointer &lt;code&gt;$eip&lt;/code&gt;.  En 32 bits, cette adresse est valide puisque l&amp;rsquo;espace adressable va de &lt;code&gt;0X0..0&lt;/code&gt; à &lt;code&gt;0xbfffffff&lt;/code&gt;.  Par contre en 64 bits, on va de &lt;code&gt;0x00...0&lt;/code&gt; à &lt;code&gt;0x00007fffffffffff&lt;/code&gt;.  Donc &lt;code&gt;0x4141...&lt;/code&gt; fera crasher l&amp;rsquo;application également, mais pour une autre raison.  Dans la suite de ce post, quand on forgera une adresse bidon, il faut mettra les deux premiers bytes (au moins) à zéro.&lt;/p&gt;
+&lt;p&gt;Les conventions d&amp;rsquo;appel de fonction ne sont pas les mêmes qu&amp;rsquo;en 32 bits, les syscalls ont de petites différences, etc.  On verra ca dans la suite&amp;hellip;  Il faut également garder à l&amp;rsquo;esprit que l&amp;rsquo;espace des adresses valide n&amp;rsquo;est pas le même qu&amp;rsquo;en 32 bits.  En effet souvent on utilise la fameuse séquence &lt;code&gt;0x414141..&lt;/code&gt;. pour marquer qu&amp;rsquo;on contrôle bien le pointer &lt;code&gt;$eip&lt;/code&gt;.  En 32 bits, cette adresse est valide puisque l&amp;rsquo;espace adressable va de &lt;code&gt;0X0..0&lt;/code&gt; à &lt;code&gt;0xbfffffff&lt;/code&gt;.  Par contre en 64 bits, on va de &lt;code&gt;0x00...0&lt;/code&gt; à &lt;code&gt;0x00007fffffffffff&lt;/code&gt;.  Donc &lt;code&gt;0x4141...&lt;/code&gt; va directement taper dans les adresses interdites.  Si on forge une adresse bidon, il faut mettre les deux premiers bytes (au moins) à zéro.&lt;/p&gt;
 
 &lt;p&gt;Cherchons la présence de fonctions qui nous aideraient bien à avoir un shell&amp;hellip;&lt;/p&gt;
 

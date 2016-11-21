@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="generator" content="Hugo 0.18-DEV" />
+
+  <title>ssh gpg et ta nouvelle carte de credit &middot; ngup, stfu, rtfm &amp; KISS</title>
+
+  
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/pure-min.css">
+
+  <!--[if lte IE 8]>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/grids-responsive-old-ie-min.css">
+  <![endif]-->
+  <!--[if gt IE 8]><!-->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/grids-responsive-min.css">
+  <!--<![endif]-->
+
+  <!--[if lte IE 8]>
+  <link rel="stylesheet" href="https://unix4fun.github.io/css/side-menu-old-ie.css">
+  <![endif]-->
+  <!--[if gt IE 8]><!-->
+  <link rel="stylesheet" href="https://unix4fun.github.io/css/side-menu.css">
+  <!--<![endif]-->
+
+  <link rel="stylesheet" href="https://unix4fun.github.io/css/blackburn.css">
+
+  
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
+
+  
+  <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet" type="text/css">
+
+  
+  
+
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.7.0/styles/androidstudio.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.7.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  
+
+  <link rel="shortcut icon" href="https://unix4fun.github.io/img/favicon.ico" type="image/x-icon" />
+
+  
+  
+
+</head>
+
+
+<body>
+<div id="layout">
+
+  
+<a href="#menu" id="menuLink" class="menu-link">
+  
+  <span></span>
+</a>
+<div id="menu">
+
+  
+  <a class="pure-menu-heading brand" href="https://unix4fun.github.io/">unix4fun</a>
+
+
+  <div class="pure-menu">
+    <ul class="pure-menu-list">
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="https://unix4fun.github.io/post/"><i class='fa fa-list fa-fw'></i>posts</a>
+      
+        </li>
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="https://unix4fun.github.io/tags/"><i class='fa fa-tags fa-fw'></i>tags</a>
+      
+        </li>
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="https://unix4fun.github.io/topics/"><i class='fa fa-folder fa-fw'></i>stories</a>
+      
+        </li>
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="https://unix4fun.github.io/authors/"><i class='fa fa-user fa-fw'></i>authors</a>
+      
+        </li>
+      
+      
+        <li class="pure-menu-item">
+          <a class="pure-menu-link" href="https://unix4fun.github.io/about/"><i class='fa fa-phone fa-fw'></i>About</a>
+      
+        </li>
+      
+    </ul>
+  </div>
+
+  <div class="pure-menu links">
+  <ul class="pure-menu-list">
+
+    <li class="pure-menu-item">
+	  <a class="pure-menu-link" href="http://blog.unix4fun.net/"><i class="fa fa-chain fa-fw"></i>Old Blog</a>
+    </li>
+
+    
+
+  </ul>
+</div>
+
+
+  <div class="pure-menu social">
+  <ul class="pure-menu-list">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <li class="pure-menu-item">
+      <a class="pure-menu-link" href="https://github.com/unix4fun" target="_blank"><i class="fa fa-github-square fa-fw"></i>GitHub</a>
+    </li>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+
+  </ul>
+</div>
+
+
+  <div>
+  <div class="small-print">
+    <small>&copy; unix4fun 2016.<br>All rights reserved.</small>
+  </div>
+  
+</div>
+
+</div>
+
+
+  <div id="main">
+
+
+<div class="header">
+  <h1>ssh gpg et ta nouvelle carte de credit</h1>
+  <h2></h2>
+</div>
+<div class="content">
+
+  <div class="post-meta">
+
+  <div>
+    <i class="fa fa-calendar fa-fw"></i>
+    <time>20 Nov 2016, 13:05</time>
+  </div>
+
+  
+
+  
+  
+  
+  
+
+  
+  
+  
+  <div>
+    <i class="fa fa-tags fa-fw"></i>
+    
+      <a class="post-taxonomy-tag" href="https://unix4fun.github.io/tags/ssh">ssh</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="https://unix4fun.github.io/tags/auth">auth</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="https://unix4fun.github.io/tags/bofh">bofh</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="https://unix4fun.github.io/tags/gpg">gpg</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="https://unix4fun.github.io/tags/smartcard">smartcard</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="https://unix4fun.github.io/tags/loose">loose</a>&nbsp;&#47;
+    
+      <a class="post-taxonomy-tag" href="https://unix4fun.github.io/tags/openpgp">openpgp</a>
+    
+  </div>
+  
+  
+
+  
+  
+  
+  <div>
+    <i class="fa fa-user fa-fw"></i>
+    
+      <a class="post-taxonomy-author" href="https://unix4fun.github.io/authors/eau">eau</a>
+    
+  </div>
+  
+  
+
+</div>
+
+
+  
+
+<h2 id="c-est-quoi-l-histoire">C&rsquo;est quoi l&rsquo;histoire?</h2>
+
+<p>Crise de la trentaine..</p>
+
+<p>Comme beaucoup de bouseux/geeks de l&rsquo;opensource (dont je fais partie), j&rsquo;ai beaucoup de machines qui &ldquo;traînent&rdquo; et servent <em>sporadiquement</em> pour certains trucs elec-digitale/FPGA/OTG/ARM/decouverte/blabla (comme le <a href="https://www.crowdsupply.com/sutajio-kosagi/novena">novena</a>) ou certaines &ldquo;tâches&rdquo;/&ldquo;test&rdquo; (comme bientôt l&rsquo;<a href="https://www.crowdsupply.com/design-shift/orwl">ORWL</a>), j&rsquo;ai plusieurs &ldquo;laptops&rdquo; selon que je bosse (et sur quoi) ou que je &ldquo;traîne&rdquo; sur mes projets persos (ah ça je traîne..) ou de l&rsquo;apprentissage (<a href="https://www.amazon.com/Screen-Lemote-Yeeloong-8101_B-Netbook/dp/B005XH10NQ/ref=sr_1_2?ie=UTF8&amp;qid=1319989211&amp;sr=8-2?tag=electronicfro-20">yeelong</a> pour le MIPS ou le novena pour l&rsquo;arch ARM).</p>
+
+<p>Le truc relou c&rsquo;est que je voulais pouvoir me logguer (ah mon IRC&hellip;) souvent depuis la machine où je suis sur le moment (OS hétérogènes: bsd, linux, os/x) mais sans transférer/laisser trainer la/les clefs SSH et/ou GPG et en limitant (un peu, faut pas rêver non plus.) les risques qu&rsquo;un putain de malware/bouseux concurrent (oui on sait jamais) me les tapent simplement&hellip;</p>
+
+<p>Alors j&rsquo;ai juste cherché, vite fait, comment je pourrais faire.. je me suis aussi demandé pourquoi je l&rsquo;ai pas fait avant&hellip;  je me forçais à me logguer depuis UNE seule machine trusted blablabla&hellip; bref.</p>
+
+<h2 id="comment">Comment?</h2>
+
+<p>Y a pleins d&rsquo;approches &ldquo;potentielles&rdquo;:</p>
+
+<ul>
+<li>un disque externe/USB chiffré qui se monte automagiquement, mais c&rsquo;est relou selon les FS/crypto supportés, pas multiplateforme et bon on peut encore te taper ta clef privée (genre en mémoire) meme si elle est chiffrée avec ta gentille passphrase.</li>
+<li>un HSM, une variante du FS qui te file une interface d&rsquo;accès qui &ldquo;devrait&rdquo; marcher partout.. mais bon.. on sait ce que c&rsquo;est.. driver, interface peu/pas portables/etc..</li>
+<li>keybase.io qui te propose un moyen de dealer avec tes clefs GPG (mais pas que..) de manière (IMHO) assez bordelique (mais pas que..) et complexe, mais avec une jolie CLI et une jolie interface <em>yoyoyo-je-suis-une-startup-à-SF-donc-jai-forcément-la-solution-to-build-a-better-world</em></li>
+<li>smartcards (hmm?! comment ça marche?)</li>
+<li>copier-partout-et-croire-en-dieu-ou-des-esprits-que-tu-te-feras-jamais-défoncer</li>
+<li>what else? (vous pouvez commenter!)</li>
+</ul>
+
+<p>Apres une brillante analyse (qui me caractérise bien moi, le bon et prétentieux bouseux opensourceux), la définition d&rsquo;un threat model, le calcul du risque associé et la production de slides incroyables pour la prochaine conf à la con ou j&rsquo;irais vomir/étaler ma mediocrite pour me vendre un peu plus en tentant de changer de statut (e.g. passer du cassoulet LIDL au cassoulet Williams Saurin, c&rsquo;est une évolution en soi).</p>
+
+<p>J&rsquo;en suis venu aux smartcards, qui loin d&rsquo;être parfaites, proposent quand même un compromis &ldquo;sympa&rdquo; pour peu que l&rsquo;on <em>TRUSTE</em> le hardware, le protocole (CCID) et son implementation (il y a des choses intéressantes d&rsquo;ailleurs.. ;)), finalement, je truste mon laptop et tous ses composants même les plus &ldquo;blobesques&rdquo; (hélas..) et critiques (ethernet / BIOS / etc..?!).</p>
+
+<h2 id="setup">Setup..</h2>
+
+<p>Honnêtement, je vais pas reprendre le setup pas à pas, j&rsquo;ai compilé une serie de liens qui m&rsquo;ont aidé à piger/faire mon setup, ca devrait largement suffire pour démarrer.</p>
+
+<p>En ce qui concerne les smartcards, voila ce que j&rsquo;ai listé:</p>
+
+<ul>
+<li>Yubikey v4, elles ont plusieurs mode de fonctionnement qui collaborent (FIDO/U2F/CCID/HSM blablabla), en gros yubikey (si vous les ouvrez) c&rsquo;est 2 MCU, un &ldquo;secure&rdquo; MCU qui gère la crypto/storage, NXP chaisplus combien et un MCU qui gère la comm USB/CCID, <a href="http://www.hexview.com/~scl/neo/">quelqu&rsquo;un l&rsquo;avait fait avant moi</a>, ça ne m&rsquo;a pas empêché de l&rsquo;ouvrir&hellip; oui, vous avez compris j&rsquo;adore ouvrir les boîtes de cassoulets <a href="http://www.hexview.com/~scl/neo/">http://www.hexview.com/~scl/neo/</a> mais lui au moins, il a pris des photos.</li>
+<li>OpenPGP card v2.1 on les trouve un peu partout, un peu lentes mais marchent très bien (recommandées par la FSF).</li>
+<li>Nitrokey, une implementation &ldquo;opensource&rdquo;/freemium d&rsquo;une smartcard à base de MCU / gnuk.</li>
+<li>Gnuk, MCU avec le code opensource Gnuk, qui utilise une lib de threading comme OS et fait tourner les opérations de crypto et la minipile USB/CCID pour repondre comme une smartcard.</li>
+<li>what else?</li>
+</ul>
+
+<p>Voilà les liens qui m&rsquo;ont aidés:</p>
+
+<ul>
+<li><a href="https://wiki.fsfe.org/TechDocs/CardHowtos/CardWithSubkeysUsingBackups">https://wiki.fsfe.org/TechDocs/CardHowtos/CardWithSubkeysUsingBackups</a></li>
+<li><a href="https://www.gnupg.org/howtos/card-howto/en/smartcard-howto.html">https://www.gnupg.org/howtos/card-howto/en/smartcard-howto.html</a></li>
+<li><a href="https://budts.be/weblog/2012/08/ssh-authentication-with-your-pgp-key">https://budts.be/weblog/2012/08/ssh-authentication-with-your-pgp-key</a></li>
+<li><a href="https://www.sidorenko.io/blog/2014/11/04/yubikey-slash-openpgp-smartcards-for-newbies/">https://www.sidorenko.io/blog/2014/11/04/yubikey-slash-openpgp-smartcards-for-newbies/</a></li>
+<li><a href="https://blog.josefsson.org/2014/06/23/offline-gnupg-master-key-and-subkeys-on-yubikey-neo-smartcard/">https://blog.josefsson.org/2014/06/23/offline-gnupg-master-key-and-subkeys-on-yubikey-neo-smartcard/</a></li>
+<li><a href="https://www.preining.info/blog/2016/04/gnupg-subkeys-yubikey/">https://www.preining.info/blog/2016/04/gnupg-subkeys-yubikey/</a></li>
+<li><a href="https://spin.atomicobject.com/2014/02/09/gnupg-openpgp-smartcard/">https://spin.atomicobject.com/2014/02/09/gnupg-openpgp-smartcard/</a></li>
+<li><a href="https://incenp.org/notes/2014/gnupg-for-ssh-authentication.html">https://incenp.org/notes/2014/gnupg-for-ssh-authentication.html</a></li>
+<li><a href="https://openpgpcard.org/makecard/">https://openpgpcard.org/makecard/</a></li>
+<li><a href="https://lists.gnupg.org/pipermail/gnupg-devel/2016-January/030682.html">https://lists.gnupg.org/pipermail/gnupg-devel/2016-January/030682.html</a></li>
+<li><a href="https://www.gnupg.org/documentation/manuals/gnupg/GPG-Configuration.html">https://www.gnupg.org/documentation/manuals/gnupg/GPG-Configuration.html</a></li>
+<li><a href="https://wiki.archlinux.org/index.php/GnuPG">https://wiki.archlinux.org/index.php/GnuPG</a></li>
+<li><a href="https://wiki.debian.org/Smartcards/OpenPGP#SSH">https://wiki.debian.org/Smartcards/OpenPGP#SSH</a></li>
+<li><a href="https://www.esev.com/blog/post/2015-01-pgp-ssh-key-on-yubikey-neo/">https://www.esev.com/blog/post/2015-01-pgp-ssh-key-on-yubikey-neo/</a></li>
+<li><a href="https://www.programmierecke.net/howto/gpg-ssh.html">https://www.programmierecke.net/howto/gpg-ssh.html</a></li>
+<li><a href="https://alexcabal.com/creating-the-perfect-gpg-keypair/">https://alexcabal.com/creating-the-perfect-gpg-keypair/</a></li>
+</ul>
+
+<p>Hardware:</p>
+
+<ul>
+<li><a href="https://www.seeedstudio.com/FST-01-with-White-Enclosure-p-1279.html">https://www.seeedstudio.com/FST-01-with-White-Enclosure-p-1279.html</a></li>
+<li><a href="https://github.com/jj1bdx/chopstx/blob/master/README">https://github.com/jj1bdx/chopstx/blob/master/README</a></li>
+<li><a href="http://www.fsij.org/doc-gnuk/intro.html#usages">http://www.fsij.org/doc-gnuk/intro.html#usages</a></li>
+<li><a href="https://github.com/ggkitsas/gnuk">https://github.com/ggkitsas/gnuk</a></li>
+<li><a href="https://wiki.debian.org/Smartcards#Some_common_cards">https://wiki.debian.org/Smartcards#Some_common_cards</a></li>
+</ul>
+
+<h2 id="les-merdes-y-a-toujours-des-merdes">les merdes, y a toujours des merdes&hellip;</h2>
+
+<ul>
+<li><em>keytocard</em> ca MOVE (donc efface) les clefs privées de votre <em>keyring</em> et les remplace par un <em>stub</em>, rappelez vous en (genre avant le backup).</li>
+<li>gnupg v1 VS gnupg v2.0 VS gnupg v2.1 ça cohabite, mais pas très bien, il y a des VRAIES différences et ça peut causer quelques emmerdes, ne vous faites pas avoir. En gros démarrez avec avec 2.1.X et stick to it now&hellip; c&rsquo;est pas parfait mais ça évolue&hellip;</li>
+<li>gnupg 2.1.15 l&rsquo;avant dernière release (celle avec laquelle je me suis battu&hellip;) avait un bug où la wrapper lib de threading (npth) etait utilisée AVANT d&rsquo;être d&rsquo;initialisée et <em>gpg-agent</em>, <em>scdaemon</em>, <em>dirmngr</em> se mangeaient un bel <em>assert()</em> et donc ne fonctionnaient pas, mais ça compilait sans soucis, du coup la release était une release&hellip; mais inutilisable.. j&rsquo;ai fait un patch, mais 2.1.16 a été releasé entre temps qui resoud ce BUG mais n&rsquo;est pas encore forcément dans tous les repositories de packages.</li>
+<li>gnupg v2.1 crée des <em>stubs</em> des clefs privée À CHAQUE instanciation de l&rsquo;agent (&ndash;card-status par exemple), si vous avez plusieurs smartcards avec la MÊME clef, oubliez pas de tuer l&rsquo;agent et de &ldquo;cleaner&rdquo; (rm -rf $HOME/.gnupg/private-keys-v1.d/*) sinon il va associer/garder les stubs de la smartcard précédente et au moment de l utilisation vous demander d&rsquo;insérer la dite smartcard.</li>
+<li>impossible d&rsquo;avoir le <em>pinentry</em> au moment de mon ssh, il me faut &ldquo;préparer&rdquo; l&rsquo;agent, un petit <em>gpg2 &ndash;card-status</em>, suivi d&rsquo;un <em>gpg2 -d <unfichierchiffreavecmaclefGPG></em> le tout avec ma carte insérée (+ le bon PIN) et juste apres je peux faire mon ssh et ça passe.</li>
+<li><em>$HOME/.gnupg/scd-events</em> peut être exécuté à chaque instanciation de l&rsquo;agent et/ou insertion d&rsquo;une SC, attention, le lecteur SC standard USB et une yubikey ne se comportent pas de manière identique, pour avoir un comportement consistant (genre killer l&rsquo;agent ou cleaner les stubs est pas évident) il faut travailler un peu..</li>
+<li>veillez comme toutes les docs le disent à BIEN FAIRE DES BACKUPS apres les différentes étapes, création masterkey, subkeys, etc.. et à mettre ces backups safe et offline, sinon tout ça ne sert à rien.</li>
+</ul>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>Mon français sent des pieds mais ça marche, mes clefs ne sont plus &ldquo;online&rdquo;, à part sur mes 2 SC, la SC donne une interface pour signer/chiffrer (via CCID) mais ne permet pas de récupérer les clefs privées directement (comme sur un FS), je peux plugger ma SC sur différents systèmes (BSD, Linux, OS/x) mon auth est faisable sans pour autant compremettre aussi facilement mes clefs, je n&rsquo;ai rien à copier et j&rsquo;ai un élément hardware en plus de mon PIN, pour chiffrer mes datas et pour m&rsquo;auth sur mes machines, plus feignant que ça tu meurs.</p>
+
+<p>Un seul bémol, il faut un gnupg 2.0.X ou 2.1.16+ et c&rsquo;est pas encore super &ldquo;smooth&rdquo;, voilà en vous remerciant.</p>
+
+
+  
+<div class="prev-next-post pure-g">
+  <div class="pure-u-1-24" style="text-align: left;">
+    
+    <a href="https://unix4fun.github.io/post/howto-rop-en-64bits/"><i class="fa fa-chevron-left"></i></a>
+    
+  </div>
+  <div class="pure-u-10-24">
+    
+    <nav class="prev">
+      <a href="https://unix4fun.github.io/post/howto-rop-en-64bits/">Exploiter un binaire 64 bits sous Linux via ROP</a>
+    </nav>
+    
+  </div>
+  <div class="pure-u-2-24">
+    &nbsp;
+  </div>
+  <div class="pure-u-10-24">
+    
+  </div>
+  <div class="pure-u-1-24" style="text-align: right;">
+    
+  </div>
+</div>
+
+
+
+  
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+
+(function() {
+    
+    
+    if (window.location.hostname == "localhost")
+        return;
+
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    var disqus_shortname = 'unix4fun';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+</div>
+
+</div>
+</div>
+<script src="https://unix4fun.github.io/js/ui.js"></script>
+
+
+
+
+</body>
+</html>
+

@@ -2,13 +2,113 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>ngup, stfu, rtfm &amp; KISS</title>
-    <link>https://unix4fun.github.io/</link>
+    <link>https://unix4fun.github.io/index.xml</link>
     <description>Recent content on ngup, stfu, rtfm &amp; KISS</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>&amp;copy; unix4fun 2016.&lt;br&gt;All rights reserved.</copyright>
-    <lastBuildDate>Mon, 03 Oct 2016 10:48:10 +0200</lastBuildDate>
+    <lastBuildDate>Sun, 20 Nov 2016 13:05:55 +0100</lastBuildDate>
     <atom:link href="https://unix4fun.github.io/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>ssh gpg et ta nouvelle carte de credit</title>
+      <link>https://unix4fun.github.io/post/ssh-gpg-et-ta-nouvelle-carte-de-credit/</link>
+      <pubDate>Sun, 20 Nov 2016 13:05:55 +0100</pubDate>
+      
+      <guid>https://unix4fun.github.io/post/ssh-gpg-et-ta-nouvelle-carte-de-credit/</guid>
+      <description>
+
+&lt;h2 id=&#34;c-est-quoi-l-histoire&#34;&gt;C&amp;rsquo;est quoi l&amp;rsquo;histoire?&lt;/h2&gt;
+
+&lt;p&gt;Crise de la trentaine..&lt;/p&gt;
+
+&lt;p&gt;Comme beaucoup de bouseux/geeks de l&amp;rsquo;opensource (dont je fais partie), j&amp;rsquo;ai beaucoup de machines qui &amp;ldquo;traînent&amp;rdquo; et servent &lt;em&gt;sporadiquement&lt;/em&gt; pour certains trucs elec-digitale/FPGA/OTG/ARM/decouverte/blabla (comme le &lt;a href=&#34;https://www.crowdsupply.com/sutajio-kosagi/novena&#34;&gt;novena&lt;/a&gt;) ou certaines &amp;ldquo;tâches&amp;rdquo;/&amp;ldquo;test&amp;rdquo; (comme bientôt l&amp;rsquo;&lt;a href=&#34;https://www.crowdsupply.com/design-shift/orwl&#34;&gt;ORWL&lt;/a&gt;), j&amp;rsquo;ai plusieurs &amp;ldquo;laptops&amp;rdquo; selon que je bosse (et sur quoi) ou que je &amp;ldquo;traîne&amp;rdquo; sur mes projets persos (ah ça je traîne..) ou de l&amp;rsquo;apprentissage (&lt;a href=&#34;https://www.amazon.com/Screen-Lemote-Yeeloong-8101_B-Netbook/dp/B005XH10NQ/ref=sr_1_2?ie=UTF8&amp;amp;qid=1319989211&amp;amp;sr=8-2?tag=electronicfro-20&#34;&gt;yeelong&lt;/a&gt; pour le MIPS ou le novena pour l&amp;rsquo;arch ARM).&lt;/p&gt;
+
+&lt;p&gt;Le truc relou c&amp;rsquo;est que je voulais pouvoir me logguer (ah mon IRC&amp;hellip;) souvent depuis la machine où je suis sur le moment (OS hétérogènes: bsd, linux, os/x) mais sans transférer/laisser trainer la/les clefs SSH et/ou GPG et en limitant (un peu, faut pas rêver non plus.) les risques qu&amp;rsquo;un putain de malware/bouseux concurrent (oui on sait jamais) me les tapent simplement&amp;hellip;&lt;/p&gt;
+
+&lt;p&gt;Alors j&amp;rsquo;ai juste cherché, vite fait, comment je pourrais faire.. je me suis aussi demandé pourquoi je l&amp;rsquo;ai pas fait avant&amp;hellip;  je me forçais à me logguer depuis UNE seule machine trusted blablabla&amp;hellip; bref.&lt;/p&gt;
+
+&lt;h2 id=&#34;comment&#34;&gt;Comment?&lt;/h2&gt;
+
+&lt;p&gt;Y a pleins d&amp;rsquo;approches &amp;ldquo;potentielles&amp;rdquo;:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;un disque externe/USB chiffré qui se monte automagiquement, mais c&amp;rsquo;est relou selon les FS/crypto supportés, pas multiplateforme et bon on peut encore te taper ta clef privée (genre en mémoire) meme si elle est chiffrée avec ta gentille passphrase.&lt;/li&gt;
+&lt;li&gt;un HSM, une variante du FS qui te file une interface d&amp;rsquo;accès qui &amp;ldquo;devrait&amp;rdquo; marcher partout.. mais bon.. on sait ce que c&amp;rsquo;est.. driver, interface peu/pas portables/etc..&lt;/li&gt;
+&lt;li&gt;keybase.io qui te propose un moyen de dealer avec tes clefs GPG (mais pas que..) de manière (IMHO) assez bordelique (mais pas que..) et complexe, mais avec une jolie CLI et une jolie interface &lt;em&gt;yoyoyo-je-suis-une-startup-à-SF-donc-jai-forcément-la-solution-to-build-a-better-world&lt;/em&gt;&lt;/li&gt;
+&lt;li&gt;smartcards (hmm?! comment ça marche?)&lt;/li&gt;
+&lt;li&gt;copier-partout-et-croire-en-dieu-ou-des-esprits-que-tu-te-feras-jamais-défoncer&lt;/li&gt;
+&lt;li&gt;what else? (vous pouvez commenter!)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Apres une brillante analyse (qui me caractérise bien moi, le bon et prétentieux bouseux opensourceux), la définition d&amp;rsquo;un threat model, le calcul du risque associé et la production de slides incroyables pour la prochaine conf à la con ou j&amp;rsquo;irais vomir/étaler ma mediocrite pour me vendre un peu plus en tentant de changer de statut (e.g. passer du cassoulet LIDL au cassoulet Williams Saurin, c&amp;rsquo;est une évolution en soi).&lt;/p&gt;
+
+&lt;p&gt;J&amp;rsquo;en suis venu aux smartcards, qui loin d&amp;rsquo;être parfaites, proposent quand même un compromis &amp;ldquo;sympa&amp;rdquo; pour peu que l&amp;rsquo;on &lt;em&gt;TRUSTE&lt;/em&gt; le hardware, le protocole (CCID) et son implementation (il y a des choses intéressantes d&amp;rsquo;ailleurs.. ;)), finalement, je truste mon laptop et tous ses composants même les plus &amp;ldquo;blobesques&amp;rdquo; (hélas..) et critiques (ethernet / BIOS / etc..?!).&lt;/p&gt;
+
+&lt;h2 id=&#34;setup&#34;&gt;Setup..&lt;/h2&gt;
+
+&lt;p&gt;Honnêtement, je vais pas reprendre le setup pas à pas, j&amp;rsquo;ai compilé une serie de liens qui m&amp;rsquo;ont aidé à piger/faire mon setup, ca devrait largement suffire pour démarrer.&lt;/p&gt;
+
+&lt;p&gt;En ce qui concerne les smartcards, voila ce que j&amp;rsquo;ai listé:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Yubikey v4, elles ont plusieurs mode de fonctionnement qui collaborent (FIDO/U2F/CCID/HSM blablabla), en gros yubikey (si vous les ouvrez) c&amp;rsquo;est 2 MCU, un &amp;ldquo;secure&amp;rdquo; MCU qui gère la crypto/storage, NXP chaisplus combien et un MCU qui gère la comm USB/CCID, &lt;a href=&#34;http://www.hexview.com/~scl/neo/&#34;&gt;quelqu&amp;rsquo;un l&amp;rsquo;avait fait avant moi&lt;/a&gt;, ça ne m&amp;rsquo;a pas empêché de l&amp;rsquo;ouvrir&amp;hellip; oui, vous avez compris j&amp;rsquo;adore ouvrir les boîtes de cassoulets &lt;a href=&#34;http://www.hexview.com/~scl/neo/&#34;&gt;http://www.hexview.com/~scl/neo/&lt;/a&gt; mais lui au moins, il a pris des photos.&lt;/li&gt;
+&lt;li&gt;OpenPGP card v2.1 on les trouve un peu partout, un peu lentes mais marchent très bien (recommandées par la FSF).&lt;/li&gt;
+&lt;li&gt;Nitrokey, une implementation &amp;ldquo;opensource&amp;rdquo;/freemium d&amp;rsquo;une smartcard à base de MCU / gnuk.&lt;/li&gt;
+&lt;li&gt;Gnuk, MCU avec le code opensource Gnuk, qui utilise une lib de threading comme OS et fait tourner les opérations de crypto et la minipile USB/CCID pour repondre comme une smartcard.&lt;/li&gt;
+&lt;li&gt;what else?&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Voilà les liens qui m&amp;rsquo;ont aidés:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://wiki.fsfe.org/TechDocs/CardHowtos/CardWithSubkeysUsingBackups&#34;&gt;https://wiki.fsfe.org/TechDocs/CardHowtos/CardWithSubkeysUsingBackups&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.gnupg.org/howtos/card-howto/en/smartcard-howto.html&#34;&gt;https://www.gnupg.org/howtos/card-howto/en/smartcard-howto.html&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://budts.be/weblog/2012/08/ssh-authentication-with-your-pgp-key&#34;&gt;https://budts.be/weblog/2012/08/ssh-authentication-with-your-pgp-key&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.sidorenko.io/blog/2014/11/04/yubikey-slash-openpgp-smartcards-for-newbies/&#34;&gt;https://www.sidorenko.io/blog/2014/11/04/yubikey-slash-openpgp-smartcards-for-newbies/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://blog.josefsson.org/2014/06/23/offline-gnupg-master-key-and-subkeys-on-yubikey-neo-smartcard/&#34;&gt;https://blog.josefsson.org/2014/06/23/offline-gnupg-master-key-and-subkeys-on-yubikey-neo-smartcard/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.preining.info/blog/2016/04/gnupg-subkeys-yubikey/&#34;&gt;https://www.preining.info/blog/2016/04/gnupg-subkeys-yubikey/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://spin.atomicobject.com/2014/02/09/gnupg-openpgp-smartcard/&#34;&gt;https://spin.atomicobject.com/2014/02/09/gnupg-openpgp-smartcard/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://incenp.org/notes/2014/gnupg-for-ssh-authentication.html&#34;&gt;https://incenp.org/notes/2014/gnupg-for-ssh-authentication.html&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://openpgpcard.org/makecard/&#34;&gt;https://openpgpcard.org/makecard/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://lists.gnupg.org/pipermail/gnupg-devel/2016-January/030682.html&#34;&gt;https://lists.gnupg.org/pipermail/gnupg-devel/2016-January/030682.html&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.gnupg.org/documentation/manuals/gnupg/GPG-Configuration.html&#34;&gt;https://www.gnupg.org/documentation/manuals/gnupg/GPG-Configuration.html&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://wiki.archlinux.org/index.php/GnuPG&#34;&gt;https://wiki.archlinux.org/index.php/GnuPG&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://wiki.debian.org/Smartcards/OpenPGP#SSH&#34;&gt;https://wiki.debian.org/Smartcards/OpenPGP#SSH&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.esev.com/blog/post/2015-01-pgp-ssh-key-on-yubikey-neo/&#34;&gt;https://www.esev.com/blog/post/2015-01-pgp-ssh-key-on-yubikey-neo/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.programmierecke.net/howto/gpg-ssh.html&#34;&gt;https://www.programmierecke.net/howto/gpg-ssh.html&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://alexcabal.com/creating-the-perfect-gpg-keypair/&#34;&gt;https://alexcabal.com/creating-the-perfect-gpg-keypair/&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Hardware:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.seeedstudio.com/FST-01-with-White-Enclosure-p-1279.html&#34;&gt;https://www.seeedstudio.com/FST-01-with-White-Enclosure-p-1279.html&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/jj1bdx/chopstx/blob/master/README&#34;&gt;https://github.com/jj1bdx/chopstx/blob/master/README&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.fsij.org/doc-gnuk/intro.html#usages&#34;&gt;http://www.fsij.org/doc-gnuk/intro.html#usages&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/ggkitsas/gnuk&#34;&gt;https://github.com/ggkitsas/gnuk&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://wiki.debian.org/Smartcards#Some_common_cards&#34;&gt;https://wiki.debian.org/Smartcards#Some_common_cards&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;les-merdes-y-a-toujours-des-merdes&#34;&gt;les merdes, y a toujours des merdes&amp;hellip;&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;em&gt;keytocard&lt;/em&gt; ca MOVE (donc efface) les clefs privées de votre &lt;em&gt;keyring&lt;/em&gt; et les remplace par un &lt;em&gt;stub&lt;/em&gt;, rappelez vous en (genre avant le backup).&lt;/li&gt;
+&lt;li&gt;gnupg v1 VS gnupg v2.0 VS gnupg v2.1 ça cohabite, mais pas très bien, il y a des VRAIES différences et ça peut causer quelques emmerdes, ne vous faites pas avoir. En gros démarrez avec avec 2.1.X et stick to it now&amp;hellip; c&amp;rsquo;est pas parfait mais ça évolue&amp;hellip;&lt;/li&gt;
+&lt;li&gt;gnupg 2.1.15 l&amp;rsquo;avant dernière release (celle avec laquelle je me suis battu&amp;hellip;) avait un bug où la wrapper lib de threading (npth) etait utilisée AVANT d&amp;rsquo;être d&amp;rsquo;initialisée et &lt;em&gt;gpg-agent&lt;/em&gt;, &lt;em&gt;scdaemon&lt;/em&gt;, &lt;em&gt;dirmngr&lt;/em&gt; se mangeaient un bel &lt;em&gt;assert()&lt;/em&gt; et donc ne fonctionnaient pas, mais ça compilait sans soucis, du coup la release était une release&amp;hellip; mais inutilisable.. j&amp;rsquo;ai fait un patch, mais 2.1.16 a été releasé entre temps qui resoud ce BUG mais n&amp;rsquo;est pas encore forcément dans tous les repositories de packages.&lt;/li&gt;
+&lt;li&gt;gnupg v2.1 crée des &lt;em&gt;stubs&lt;/em&gt; des clefs privée À CHAQUE instanciation de l&amp;rsquo;agent (&amp;ndash;card-status par exemple), si vous avez plusieurs smartcards avec la MÊME clef, oubliez pas de tuer l&amp;rsquo;agent et de &amp;ldquo;cleaner&amp;rdquo; (rm -rf $HOME/.gnupg/private-keys-v1.d/*) sinon il va associer/garder les stubs de la smartcard précédente et au moment de l utilisation vous demander d&amp;rsquo;insérer la dite smartcard.&lt;/li&gt;
+&lt;li&gt;impossible d&amp;rsquo;avoir le &lt;em&gt;pinentry&lt;/em&gt; au moment de mon ssh, il me faut &amp;ldquo;préparer&amp;rdquo; l&amp;rsquo;agent, un petit &lt;em&gt;gpg2 &amp;ndash;card-status&lt;/em&gt;, suivi d&amp;rsquo;un &lt;em&gt;gpg2 -d &lt;unfichierchiffreavecmaclefGPG&gt;&lt;/em&gt; le tout avec ma carte insérée (+ le bon PIN) et juste apres je peux faire mon ssh et ça passe.&lt;/li&gt;
+&lt;li&gt;&lt;em&gt;$HOME/.gnupg/scd-events&lt;/em&gt; peut être exécuté à chaque instanciation de l&amp;rsquo;agent et/ou insertion d&amp;rsquo;une SC, attention, le lecteur SC standard USB et une yubikey ne se comportent pas de manière identique, pour avoir un comportement consistant (genre killer l&amp;rsquo;agent ou cleaner les stubs est pas évident) il faut travailler un peu..&lt;/li&gt;
+&lt;li&gt;veillez comme toutes les docs le disent à BIEN FAIRE DES BACKUPS apres les différentes étapes, création masterkey, subkeys, etc.. et à mettre ces backups safe et offline, sinon tout ça ne sert à rien.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;Mon français sent des pieds mais ça marche, mes clefs ne sont plus &amp;ldquo;online&amp;rdquo;, à part sur mes 2 SC, la SC donne une interface pour signer/chiffrer (via CCID) mais ne permet pas de récupérer les clefs privées directement (comme sur un FS), je peux plugger ma SC sur différents systèmes (BSD, Linux, OS/x) mon auth est faisable sans pour autant compremettre aussi facilement mes clefs, je n&amp;rsquo;ai rien à copier et j&amp;rsquo;ai un élément hardware en plus de mon PIN, pour chiffrer mes datas et pour m&amp;rsquo;auth sur mes machines, plus feignant que ça tu meurs.&lt;/p&gt;
+
+&lt;p&gt;Un seul bémol, il faut un gnupg 2.0.X ou 2.1.16+ et c&amp;rsquo;est pas encore super &amp;ldquo;smooth&amp;rdquo;, voilà en vous remerciant.&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Exploiter un binaire 64 bits sous Linux via ROP</title>
@@ -85,7 +185,7 @@ int main(int argc, char **argv)
 &lt;li&gt;le programme tourne en 64 bits&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;Les conventions d&amp;rsquo;appel de fonction ne sont pas les mêmes qu&amp;rsquo;en 32 bits, les syscalls ont de petites différences, etc.  On verra ca dans la suite&amp;hellip;  Il faut également garder à l&amp;rsquo;esprit que l&amp;rsquo;espace des adresses valide n&amp;rsquo;est pas le même qu&amp;rsquo;en 32 bits.  En effet souvent on utilise la fameuse séquence &lt;code&gt;0x414141..&lt;/code&gt;. pour marquer qu&amp;rsquo;on contrôle bien le pointer &lt;code&gt;$eip&lt;/code&gt;.  En 32 bits, cette adresse est valide puisque l&amp;rsquo;espace adressable va de &lt;code&gt;0X0..0&lt;/code&gt; à &lt;code&gt;0xbfffffff&lt;/code&gt;.  Par contre en 64 bits, on va de &lt;code&gt;0x00...0&lt;/code&gt; à &lt;code&gt;0x00007fffffffffff&lt;/code&gt;.  Donc &lt;code&gt;0x4141...&lt;/code&gt; fera crasher l&amp;rsquo;application également, mais pour une autre raison.  Dans la suite de ce post, quand on forgera une adresse bidon, il faut mettra les deux premiers bytes (au moins) à zéro.&lt;/p&gt;
+&lt;p&gt;Les conventions d&amp;rsquo;appel de fonction ne sont pas les mêmes qu&amp;rsquo;en 32 bits, les syscalls ont de petites différences, etc.  On verra ca dans la suite&amp;hellip;  Il faut également garder à l&amp;rsquo;esprit que l&amp;rsquo;espace des adresses valide n&amp;rsquo;est pas le même qu&amp;rsquo;en 32 bits.  En effet souvent on utilise la fameuse séquence &lt;code&gt;0x414141..&lt;/code&gt;. pour marquer qu&amp;rsquo;on contrôle bien le pointer &lt;code&gt;$eip&lt;/code&gt;.  En 32 bits, cette adresse est valide puisque l&amp;rsquo;espace adressable va de &lt;code&gt;0X0..0&lt;/code&gt; à &lt;code&gt;0xbfffffff&lt;/code&gt;.  Par contre en 64 bits, on va de &lt;code&gt;0x00...0&lt;/code&gt; à &lt;code&gt;0x00007fffffffffff&lt;/code&gt;.  Donc &lt;code&gt;0x4141...&lt;/code&gt; va directement taper dans les adresses interdites.  Si on forge une adresse bidon, il faut mettre les deux premiers bytes (au moins) à zéro.&lt;/p&gt;
 
 &lt;p&gt;Cherchons la présence de fonctions qui nous aideraient bien à avoir un shell&amp;hellip;&lt;/p&gt;
 

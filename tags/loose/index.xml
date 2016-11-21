@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Eau on ngup, stfu, rtfm &amp; KISS</title>
-    <link>https://unix4fun.github.io/authors/eau/index.xml</link>
-    <description>Recent content in Eau on ngup, stfu, rtfm &amp; KISS</description>
+    <title>Loose on ngup, stfu, rtfm &amp; KISS</title>
+    <link>https://unix4fun.github.io/tags/loose/index.xml</link>
+    <description>Recent content in Loose on ngup, stfu, rtfm &amp; KISS</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>&amp;copy; unix4fun 2016.&lt;br&gt;All rights reserved.</copyright>
-    <atom:link href="https://unix4fun.github.io/authors/eau/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://unix4fun.github.io/tags/loose/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>ssh gpg et ta nouvelle carte de credit</title>
@@ -106,22 +106,6 @@
 &lt;p&gt;Mon français sent des pieds mais ça marche, mes clefs ne sont plus &amp;ldquo;online&amp;rdquo;, à part sur mes 2 SC, la SC donne une interface pour signer/chiffrer (via CCID) mais ne permet pas de récupérer les clefs privées directement (comme sur un FS), je peux plugger ma SC sur différents systèmes (BSD, Linux, OS/x) mon auth est faisable sans pour autant compremettre aussi facilement mes clefs, je n&amp;rsquo;ai rien à copier et j&amp;rsquo;ai un élément hardware en plus de mon PIN, pour chiffrer mes datas et pour m&amp;rsquo;auth sur mes machines, plus feignant que ça tu meurs.&lt;/p&gt;
 
 &lt;p&gt;Un seul bémol, il faut un gnupg 2.0.X ou 2.1.16+ et c&amp;rsquo;est pas encore super &amp;ldquo;smooth&amp;rdquo;, voilà en vous remerciant.&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>On est sur Github Pages!!! rholallalala</title>
-      <link>https://unix4fun.github.io/post/on-est-sur-githubpages/</link>
-      <pubDate>Sun, 02 Oct 2016 10:48:23 +0200</pubDate>
-      
-      <guid>https://unix4fun.github.io/post/on-est-sur-githubpages/</guid>
-      <description>&lt;p&gt;Tout est dit!&lt;/p&gt;
-
-&lt;p&gt;On utilise donc &lt;a href=&#34;https://gohugo.io/&#34;&gt;Hugo&lt;/a&gt; et on hoste sur &lt;a href=&#34;https://pages.github.com/&#34;&gt;GitHub Pages&lt;/a&gt;.&lt;/p&gt;
-
-&lt;p&gt;Avant on etait &lt;a href=&#34;https://blog.unix4fun.net&#34;&gt;blog.unix4fun.net&lt;/a&gt;, desormais, nous sommes &lt;a href=&#34;https://unix4fun.github.io&#34;&gt;unix4fun.github.io&lt;/a&gt;. L&amp;rsquo;ancien blog et les posts restent disponibles et on espere etre un peu plus actifs par ici&amp;hellip;&lt;/p&gt;
-
-&lt;p&gt;voila, voila, en vous remerciant!&lt;/p&gt;
 </description>
     </item>
     
