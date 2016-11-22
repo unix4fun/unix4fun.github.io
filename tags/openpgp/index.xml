@@ -17,6 +17,8 @@
       <guid>https://unix4fun.github.io/post/ssh-gpg-et-ta-nouvelle-carte-de-credit/</guid>
       <description>
 
+&lt;p&gt;&lt;strong&gt;Update 22/11/2016&lt;/strong&gt; : rajouts des liens sur le hardware + une section fun sur l&amp;rsquo;abus d&amp;rsquo;une fonctionnalite de l&amp;rsquo;implementation d&amp;rsquo;un HSM (heureusement qu&amp;rsquo;il est open cela dit&amp;hellip;)&lt;/p&gt;
+
 &lt;h2 id=&#34;c-est-quoi-l-histoire&#34;&gt;C&amp;rsquo;est quoi l&amp;rsquo;histoire?&lt;/h2&gt;
 
 &lt;p&gt;Crise de la trentaine..&lt;/p&gt;
@@ -33,8 +35,8 @@
 
 &lt;ul&gt;
 &lt;li&gt;un disque externe/USB chiffré qui se monte automagiquement, mais c&amp;rsquo;est relou selon les FS/crypto supportés, pas multiplateforme et bon on peut encore te taper ta clef privée (genre en mémoire) meme si elle est chiffrée avec ta gentille passphrase.&lt;/li&gt;
-&lt;li&gt;un HSM, une variante du FS qui te file une interface d&amp;rsquo;accès qui &amp;ldquo;devrait&amp;rdquo; marcher partout.. mais bon.. on sait ce que c&amp;rsquo;est.. driver, interface peu/pas portables/etc..&lt;/li&gt;
-&lt;li&gt;keybase.io qui te propose un moyen de dealer avec tes clefs GPG (mais pas que..) de manière (IMHO) assez bordelique (mais pas que..) et complexe, mais avec une jolie CLI et une jolie interface &lt;em&gt;yoyoyo-je-suis-une-startup-à-SF-donc-jai-forcément-la-solution-to-build-a-better-world&lt;/em&gt;&lt;/li&gt;
+&lt;li&gt;un HSM, une variante du FS qui te file une interface d&amp;rsquo;accès qui &amp;ldquo;devrait&amp;rdquo; marcher partout.. mais bon.. on sait ce que c&amp;rsquo;est.. driver, interface peu/pas portables/etc.. ou qui finalement se comporte comme un FS avec une interface pseudo-custom..&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://keybase.io&#34;&gt;keybase.io&lt;/a&gt; qui te propose un moyen de dealer avec tes clefs GPG (mais pas que..) de manière (IMHO) assez bordelique (mais pas que..) et complexe, mais avec une jolie CLI et une jolie interface &lt;em&gt;yoyoyo-je-suis-une-startup-à-SF-donc-jai-forcément-la-solution-to-build-a-better-world&lt;/em&gt;&lt;/li&gt;
 &lt;li&gt;smartcards (hmm?! comment ça marche?)&lt;/li&gt;
 &lt;li&gt;copier-partout-et-croire-en-dieu-ou-des-esprits-que-tu-te-feras-jamais-défoncer&lt;/li&gt;
 &lt;li&gt;what else? (vous pouvez commenter!)&lt;/li&gt;
@@ -66,16 +68,17 @@
 &lt;li&gt;&lt;a href=&#34;https://wiki.debian.org/Smartcards/OpenPGP#SSH&#34;&gt;https://wiki.debian.org/Smartcards/OpenPGP#SSH&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://www.esev.com/blog/post/2015-01-pgp-ssh-key-on-yubikey-neo/&#34;&gt;https://www.esev.com/blog/post/2015-01-pgp-ssh-key-on-yubikey-neo/&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://www.programmierecke.net/howto/gpg-ssh.html&#34;&gt;https://www.programmierecke.net/howto/gpg-ssh.html&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.makomk.com/2016/01/23/openpgp-crypto-token-using-gnuk/&#34;&gt;https://www.makomk.com/2016/01/23/openpgp-crypto-token-using-gnuk/&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://alexcabal.com/creating-the-perfect-gpg-keypair/&#34;&gt;https://alexcabal.com/creating-the-perfect-gpg-keypair/&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;p&gt;En ce qui concerne les smartcards, voila ce que j&amp;rsquo;ai listé:&lt;/p&gt;
 
 &lt;ul&gt;
-&lt;li&gt;Yubikey v4, elles ont plusieurs mode de fonctionnement qui collaborent (FIDO/U2F/CCID/HSM blablabla), en gros yubikey (si vous les ouvrez) c&amp;rsquo;est 2 MCU, un &amp;ldquo;secure&amp;rdquo; MCU qui gère la crypto/storage, NXP chaisplus combien et un MCU qui gère la comm USB/CCID, &lt;a href=&#34;http://www.hexview.com/~scl/neo/&#34;&gt;quelqu&amp;rsquo;un l&amp;rsquo;avait fait avant moi&lt;/a&gt;, ça ne m&amp;rsquo;a pas empêché de l&amp;rsquo;ouvrir&amp;hellip; oui, vous avez compris j&amp;rsquo;adore ouvrir les boîtes de cassoulets &lt;a href=&#34;http://www.hexview.com/~scl/neo/&#34;&gt;http://www.hexview.com/~scl/neo/&lt;/a&gt; mais lui au moins, il a pris des photos.&lt;/li&gt;
-&lt;li&gt;OpenPGP card v2.1 on les trouve un peu partout, un peu lentes mais marchent très bien (recommandées par la FSF).&lt;/li&gt;
-&lt;li&gt;Nitrokey, une implementation &amp;ldquo;opensource&amp;rdquo;/freemium d&amp;rsquo;une smartcard à base de MCU / gnuk.&lt;/li&gt;
-&lt;li&gt;Gnuk, MCU avec le code opensource Gnuk, qui utilise une lib de threading comme OS et fait tourner les opérations de crypto et la minipile USB/CCID pour repondre comme une smartcard.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.yubico.com/products/yubikey-hardware/yubikey4/&#34;&gt;Yubikey v4&lt;/a&gt;, elles ont plusieurs mode de fonctionnement qui collaborent (FIDO/U2F/CCID/HSM blablabla), en gros yubikey (si vous les ouvrez) c&amp;rsquo;est 2 MCU, un &amp;ldquo;secure&amp;rdquo; MCU qui gère la crypto/storage, NXP chaisplus combien et un MCU qui gère la comm USB/CCID, &lt;a href=&#34;http://www.hexview.com/~scl/neo/&#34;&gt;quelqu&amp;rsquo;un l&amp;rsquo;avait fait avant moi&lt;/a&gt;, ça ne m&amp;rsquo;a pas empêché de l&amp;rsquo;ouvrir&amp;hellip; oui, vous avez compris j&amp;rsquo;adore ouvrir les boîtes de cassoulets mais lui au moins, il a pris/poste des photos.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.g10code.com/p-card.html&#34;&gt;OpenPGP card v2.1&lt;/a&gt; on les trouve un peu partout, un peu lentes mais marchent très bien (recommandées par la FSF).&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://shop.nitrokey.com/shop/product/nitrokey-pro-3&#34;&gt;Nitrokey&lt;/a&gt;, une implementation &amp;ldquo;opensource&amp;rdquo;/freemium d&amp;rsquo;une smartcard à base de MCU / gnuk.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.gniibe.org/pdf/fosdem-2012/gnuk-fosdem-20120204.pdf&#34;&gt;Gnuk&lt;/a&gt;, MCU avec le code opensource Gnuk, qui utilise une &lt;a href=&#34;https://github.com/jj1bdx/chopstx/blob/master/README&#34;&gt;lib de threading&lt;/a&gt; comme OS et fait tourner les opérations de crypto et la minipile USB/CCID pour repondre comme une smartcard.&lt;/li&gt;
 &lt;li&gt;what else?&lt;/li&gt;
 &lt;/ul&gt;
 
@@ -100,6 +103,17 @@
 &lt;li&gt;&lt;em&gt;$HOME/.gnupg/scd-events&lt;/em&gt; peut être exécuté à chaque instanciation de l&amp;rsquo;agent et/ou insertion d&amp;rsquo;une SC, attention, le lecteur SC standard USB et une yubikey ne se comportent pas de manière identique, pour avoir un comportement consistant (genre killer l&amp;rsquo;agent ou cleaner les stubs est pas évident) il faut travailler un peu..&lt;/li&gt;
 &lt;li&gt;veillez comme toutes les docs le disent à BIEN FAIRE DES BACKUPS apres les différentes étapes, création masterkey, subkeys, etc.. et à mettre ces backups safe et offline, sinon tout ça ne sert à rien.&lt;/li&gt;
 &lt;/ul&gt;
+
+&lt;h2 id=&#34;encore-des-emmerdes&#34;&gt;Encore des emmerdes&amp;hellip;&lt;/h2&gt;
+
+&lt;p&gt;Le probleme est toujours le meme, le &lt;em&gt;TRUST&lt;/em&gt; sur une plateforme hardware dont vous ne connaissez RIEN et ou le joli autocollant &lt;em&gt;SECURE&lt;/em&gt; est appose pour bien vous
+faire sentir au chaud, je crois qu&amp;rsquo;il serait sympa d&amp;rsquo;avoir une review de plus des implementations ouvertes et peut-etre proposer des updates (soft ET hard) afin d&amp;rsquo;avoir des &amp;ldquo;smartcards&amp;rdquo; qui tiennent le coup.&lt;/p&gt;
+
+&lt;p&gt;On nous a gentillement signale cette &amp;ldquo;attaque&amp;rdquo;, ce &amp;ldquo;post&amp;rdquo; interessant, mais c&amp;rsquo;est plutot un l&amp;rsquo;abus d&amp;rsquo;une fonctionnalite qui a mon HUMBLE avis ne devrait pas etre implementee.&lt;/p&gt;
+
+&lt;p&gt;Ce monsieur s&amp;rsquo;est bien amuse, &lt;a href=&#34;https://raymii.org/s/articles/Nitrokey_Start_Getting_started_guide.html&#34;&gt;d&amp;rsquo;abord il joue avec son device..&lt;/a&gt;, puis il &lt;a href=&#34;https://raymii.org/s/tutorials/FST-01_firmware_upgrade_via_usb.html&#34;&gt;gratte un peu, par curiosite&lt;/a&gt;, puis &lt;a href=&#34;https://raymii.org/s/tutorials/Nitrokey_gnuk_firmware_update_via_DFU.html&#34;&gt;la encore&lt;/a&gt; plus a droite, plus a droite, un peu a gauchhhheee, laaaaaaaaaaaaaAAAAaaaa et hop &lt;a href=&#34;https://raymii.org/s/articles/Decrypt_NitroKey_HSM_or_SmartCard-HSM_private_keys.html&#34;&gt;decouvrir une belle croute de fonctionnalite&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Ca laisse reveur quand on reflechit un tout petit peu a l&amp;rsquo;utilite d&amp;rsquo;un HSM (je rappelle ce n&amp;rsquo;est pas une SmartCard CCID bla)&lt;/p&gt;
 
 &lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
 
